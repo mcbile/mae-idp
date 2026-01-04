@@ -90,7 +90,7 @@
             gap: 12px;
         }
         .header-left { display: flex; align-items: center; gap: 16px; }
-        .logo-container { display: flex; align-items: center; gap: 4px; }
+        .logo-container { display: flex; align-items: center; gap: 4px; cursor: pointer; }
         .logo-m {
             display: inline-flex;
             align-items: center;
@@ -829,13 +829,13 @@
     <header class="header">
         <div class="header-content">
             <div class="header-left">
-                <div class="logo-container">
+                <a href="/" class="logo-container" style="text-decoration: none;">
                     <span class="logo-m">M</span>
                     <div class="logo-text">
                         <span class="logo-cbile">cBile</span>
                         <span class="logo-product">AI-Engine</span>
                     </div>
-                </div>
+                </a>
                 <div class="header-divider"></div>
                 <div class="header-info">
                     <div class="header-title">Intelligent Document Processing</div>
