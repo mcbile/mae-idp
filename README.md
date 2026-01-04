@@ -5,7 +5,7 @@
 
 ![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+%20%20|%20%20Linux-navy)
 ![PWA](https://img.shields.io/badge/PWA:-iOS%20%20|%20%20Android-blue)
-![Version](https://img.shields.io/badge/Spec:-Python%203.10+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
+![Version](https://img.shields.io/badge/Spec:-Python%203.12+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
 
 ---
 
@@ -46,18 +46,18 @@ chmod +x install.sh run.sh
 
 ### Windows
 - **Windows 10/11**
-- **Python 3.10+** — [скачать](https://www.python.org/downloads/)
+- **Python 3.12+** — [скачать](https://www.python.org/downloads/)
 - **Tesseract OCR** — [скачать](https://github.com/UB-Mannheim/tesseract/wiki)
 - **Poppler** — устанавливается автоматически через `install.bat`
 
 ### macOS
 - **macOS 10.15+ (Catalina или новее)**
-- **Python 3.10+** — `brew install python@3.11`
+- **Python 3.12+** — `brew install python@3.12`
 - **Homebrew** — [установка](https://brew.sh)
 - **Tesseract & Poppler** — устанавливаются автоматически через `install.sh`
 
 ### Linux (Ubuntu/Debian/Fedora/Arch)
-- **Python 3.10+**
+- **Python 3.12+**
 - **Tesseract & Poppler** — устанавливаются автоматически через `install.sh`
 
 ---

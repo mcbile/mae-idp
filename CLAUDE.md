@@ -99,11 +99,11 @@ MAE-IDP (Intelligent Document Processing) — кроссплатформенно
 
 **Версия:** 1.5.0
 **Платформы:** Windows 10/11, macOS, Linux
-**Язык:** Python 3.10+
+**Язык:** Python 3.12+
 
 ## Tech Stack
 
-- **Python 3.10+**
+- **Python 3.12+**
 - **FastAPI 0.109.0** — веб-сервер
 - **uvicorn 0.27.0** — ASGI сервер
 - **pywebview 4.4.1** — GUI (WebView окно, опционально)

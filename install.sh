@@ -17,9 +17,9 @@ echo "Platform: $OS ($ARCH)"
 # Проверка Python
 if ! command -v python3 &> /dev/null; then
     echo "ERROR: Python 3 not found!"
-    echo "Please install Python 3.10+ first:"
+    echo "Please install Python 3.12+ first:"
     if [[ "$OS" == "Darwin" ]]; then
-        echo "  brew install python@3.11"
+        echo "  brew install python@3.12"
     else
         echo "  sudo apt install python3 python3-pip python3-venv"
     fi
