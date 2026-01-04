@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MAE PDF">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#19003E" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'><stop offset='0%25' stop-color='%23F4396E'/><stop offset='100%25' stop-color='%23C24B9D'/></linearGradient></defs><rect fill='url(%23g)' width='100' height='100' rx='20'/><text x='50' y='70' text-anchor='middle' fill='white' font-size='55' font-weight='800' font-family='sans-serif'>M</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'><stop offset='0%25' stop-color='%23F4396E'/><stop offset='100%25' stop-color='%23C24B9D'/></linearGradient></defs><rect fill='url(%23g)' width='100' height='100' rx='20'/><text x='50' y='70' text-anchor='middle' fill='white' font-size='55' font-weight='800' font-family='sans-serif'>M</text></svg>">
+    <title>MAE IDP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-1: #F8AF08;
+            --gradient-2: #F65006;
+            --gradient-3: #F54342;
+            --gradient-4: #F4396E;
+            --gradient-5: #C24B9D;
+            --gradient-6: #E729D1;
+            --gradient-7: #6883DA;
+            --gradient-8: #2BAAD3;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #FAFAFA;
+            --bg-card: #FCE4EC;
+            --bg-card-alt: #F3E5F5;
+            --bg-card-blue: #E3F2FD;
+            --bg-card-green: #E8F5E9;
+            --bg-card-orange: #FFF3E0;
+            --text-primary: #1A1A1A;
+            --text-secondary: #434343;
+            --text-muted: #666666;
+            --border-color: #E0E0E0;
+            --table-header: #E01B84;
+            --table-row-alt: #FCE4EC;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f12;
+            --bg-secondary: #1a1a1f;
+            --bg-card: #1a1a1f;
+            --bg-card-alt: rgba(255, 255, 255, 0.04);
+            --bg-card-blue: rgba(104, 131, 218, 0.12);
+            --bg-card-green: rgba(43, 170, 211, 0.12);
+            --bg-card-orange: rgba(248, 175, 8, 0.12);
+            --text-primary: #FFFFFF;
+            --text-secondary: #E8E8E8;
+            --text-muted: #B8B8B8;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --table-header: #3b82f6;
+            --table-row-alt: rgba(255, 255, 255, 0.03);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Montserrat', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .logo-container { display: flex; align-items: center; gap: 4px; }
+        .logo-m {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(180deg, #F4396E 0%, #C24B9D 100%);
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            color: white;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        .logo-cbile {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 23px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(180deg, #F4396E 0%, #C24B9D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-product {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            font-size: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .header-divider {
+            width: 1px;
+            height: 32px;
+            background: var(--border-color);
+        }
+        .header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .header-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .status-pills { display: flex; gap: 8px; }
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            cursor: help;
+        }
+        .pill.ocr { color: #3b82f6; }
+        .pill.ocr.ok { border-color: #047857; }
+        .pill.ocr.err { border-color: #F4396E; }
+        .pill.docs { color: #f59e0b; }
+        .pill.docs.ok { border-color: #22c55e; }
+        .pill.docs.err { border-color: #F4396E; }
+        .dot { width: 6px; height: 6px; border-radius: 2px; }
+        .pill.ok .dot { background: #22c55e; }
+        .pill.err .dot { background: linear-gradient(135deg, #F4396E, #C24B9D); }
+
+        /* Tooltip */
+        .pill-tooltip {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 200px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-secondary);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 100;
+            text-align: left;
+        }
+        .pill:hover .pill-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        .pill-tooltip strong {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        .pill-tooltip .status-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+        .pill-tooltip .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .pill-tooltip .status-dot.ok { background: #22c55e; }
+        .pill-tooltip .status-dot.err { background: #F4396E; }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            border: 1.5px solid transparent;
+            background-image: linear-gradient(var(--bg-secondary), var(--bg-secondary)), linear-gradient(180deg, #F4396E 0%, #F8AF08 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover { transform: scale(1.05); }
+        .toggle-btn .icon-sun { display: block; }
+        .toggle-btn .icon-moon { display: none; }
+        [data-theme="dark"] .toggle-btn .icon-sun { display: none; }
+        [data-theme="dark"] .toggle-btn .icon-moon { display: block; }
+
+        main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 6px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border-color);
+        }
+        .tab {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text-secondary); }
+        .tab.on {
+            background: linear-gradient(135deg, var(--gradient-4), var(--gradient-5));
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 57, 110, 0.3);
+        }
+        @media (max-width: 600px) {
+            .tabs { flex-direction: row; gap: 2px; padding: 4px; }
+            .tab { flex: 1; padding: 10px 8px; font-size: 11px; white-space: nowrap; }
+        }
+
+        .panel { display: none; }
+        .panel.on { display: block; }
+
+        .drop {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 56px 32px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 28px;
+            transition: all 0.3s;
+        }
+        .drop:hover {
+            border-color: var(--gradient-8);
+            background: var(--bg-card-blue);
+            transform: translateY(-2px);
+        }
+        .drop input { display: none; }
+        .drop-icon { font-size: 56px; margin-bottom: 16px; }
+        .drop h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #F4396E;
+        }
+        .drop p { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+        .tags { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+        .tag {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, var(--gradient-7), var(--gradient-8));
+            border-radius: 100px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono';
+            color: white;
+            font-weight: 600;
+        }
+
+        .proc {
+            display: none;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 24px;
+            background: var(--bg-card-blue);
+            border: 2px solid var(--gradient-7);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        .proc.on { display: flex; }
+        .spin {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--gradient-7);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .proc-text { font-size: 14px; font-weight: 600; color: var(--gradient-7); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+            .stat-card { padding: 24px 16px; }
+            .stat-value { font-size: 2.2rem; }
+            .stat-label { font-size: 0.8rem; }
+        }
+        .stat-card {
+            padding: 12px 8px;
+            border-radius: 12px;
+            text-align: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 800; font-family: 'JetBrains Mono'; line-height: 1; color: var(--text-primary); }
+        .stat-label { font-size: 0.65rem; font-weight: 600; margin-top: 4px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); }
+        .stat-card:nth-child(1) .stat-value { color: #F4396E; }
+        .stat-card:nth-child(2) .stat-value { color: #22c55e; }
+        .stat-card:nth-child(3) .stat-value { color: #f59e0b; }
+        .stat-card:nth-child(4) .stat-value { color: #ef4444; }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+        .badge {
+            background: linear-gradient(135deg, var(--gradient-4), var(--gradient-5));
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        .btn-p { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .btn-p:hover { border-color: #F4396E; color: #F4396E; }
+        .btn-danger { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .btn-danger:hover { border-color: #ef4444; color: #ef4444; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th {
+            text-align: left;
+            padding: 14px 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+            background: #3b82f6;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        th:hover { background: #2563eb; }
+        th .sort-arrow { opacity: 0.5; margin-left: 4px; font-size: 10px; }
+        th.sorted .sort-arrow { opacity: 1; }
+        th.sorted.asc .sort-arrow::after { content: '▲'; }
+        th.sorted.desc .sort-arrow::after { content: '▼'; }
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        tr:last-child td { border: none; }
+        tr:nth-child(even) { background: var(--table-row-alt); }
+        tr:hover td { background: var(--bg-card-alt); }
+
+        .st {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .st-ok { background: var(--bg-card-green); color: #00C853; }
+        .st-warn { background: var(--bg-card-orange); color: var(--gradient-1); }
+        .st-err { background: var(--bg-card); color: var(--gradient-3); }
+
+        .conf { display: flex; align-items: center; gap: 8px; }
+        .conf-bar { width: 60px; height: 6px; background: var(--bg-primary); border-radius: 3px; overflow: hidden; }
+        .conf-fill { height: 100%; border-radius: 3px; }
+        .conf-val { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .section h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, var(--gradient-7), var(--gradient-8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+        .section p.desc { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; font-weight: 500; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        .input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .input-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-primary);
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-weight: 500;
+            transition: border-color 0.2s;
+        }
+        .input-row input:focus { outline: none; border-color: var(--gradient-7); }
+
+        .watch-status {
+            padding: 20px;
+            background: var(--bg-card-green);
+            border: 2px solid var(--gradient-8);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .watch-info { display: flex; align-items: center; gap: 16px; }
+        .watch-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--gradient-8), #00C853);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(43, 170, 211, 0.3);
+        }
+        .watch-details p { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .watch-details small { color: var(--text-muted); font-size: 13px; font-weight: 500; }
+
+        .gdrive-hint {
+            background: var(--bg-card-blue);
+            border: 2px solid var(--gradient-7);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .gdrive-hint h4 {
+            background: linear-gradient(90deg, var(--gradient-7), var(--gradient-8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .gdrive-hint p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .gdrive-hint .paths { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .gdrive-hint .path-tag {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono';
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .gdrive-hint .path-tag:hover { border-color: var(--gradient-7); background: var(--bg-card-blue); }
+
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 24px 32px;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+        }
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .footer-copy { font-size: 0.75rem; opacity: 0.8; }
+        .footer-copyright {
+            opacity: 1;
+            background: linear-gradient(180deg, #F4396E 0%, #C24B9D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer-right {
+            display: grid;
+            grid-template-columns: repeat(2, auto);
+            gap: 6px 16px;
+            align-items: center;
+        }
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-link:hover {
+            background: linear-gradient(180deg, #F4396E 0%, #C24B9D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer-link:hover svg { color: #F4396E; }
+        .footer-link svg { flex-shrink: 0; }
+        .footer-link .link-text {
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-block;
+            width: 7ch;
+            text-align: left;
+        }
+        @media (max-width: 600px) {
+            .footer-content { gap: 16px; }
+            .footer-right { gap: 4px 12px; }
+            .footer-link { font-size: 11px; }
+            .footer-link .link-text { width: 6ch; }
+        }
+
+        .empty { padding: 56px; text-align: center; color: var(--text-muted); font-weight: 500; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.on { display: flex; }
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+        }
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: var(--bg-card); color: var(--text-primary); }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(80vh - 80px);
+        }
+        .modal-section {
+            margin-bottom: 24px;
+        }
+        .modal-section:last-child { margin-bottom: 0; }
+        .modal-section h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        .modal-section p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .modal-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .modal-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .modal-link:hover {
+            border-color: #F4396E;
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .tutorial-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tutorial-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #F4396E, #F8AF08);
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+        }
+        .tutorial-step p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+            padding-top: 4px;
+        }
+        .arch-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .arch-btn:hover { border-color: var(--gradient-7); color: var(--text-primary); }
+        .arch-btn.on {
+            background: linear-gradient(135deg, var(--gradient-4), var(--gradient-5));
+            border-color: transparent;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header-divider, .header-info { display: none; }
+            .status-pills { display: none; }
+            .tabs { flex-direction: row; gap: 2px; padding: 4px; }
+            .tab { flex: 1; padding: 10px 8px; font-size: 12px; white-space: nowrap; }
+        }
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .header { padding-top: max(16px, env(safe-area-inset-top)); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-container">
+                    <span class="logo-m">M</span>
+                    <div class="logo-text">
+                        <span class="logo-cbile">cBile</span>
+                        <span class="logo-product">AI-Engine</span>
+                    </div>
+                </div>
+                <div class="header-divider"></div>
+                <div class="header-info">
+                    <div class="header-title">Intelligent Document Processing</div>
+                    <div class="header-subtitle">File Parser <span style="color: #F4396E; margin: 0 1px; font-size: 10px;">■</span> OCR <span style="color: #F4396E; margin: 0 1px; font-size: 10px;">■</span> Invoice Recognition</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-pills">
+                    <div class="pill ocr" id="ocrPill">
+                        <span class="dot"></span><span>OCR</span>
+                        <div class="pill-tooltip">
+                            <strong>Tesseract OCR Engine</strong>
+                            <span>Система оптического распознавания текста для извлечения данных из документов.</span>
+                            <div class="status-line">
+                                <span class="status-dot" id="ocrStatusDot"></span>
+                                <span id="ocrStatusText">Проверка...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pill docs" id="watchPill">
+                        <span class="dot"></span><span>Doc's</span>
+                        <div class="pill-tooltip">
+                            <strong>Document Watcher</strong>
+                            <span>Мониторинг папки для автоматической обработки новых документов.</span>
+                            <div class="status-line">
+                                <span class="status-dot" id="docsStatusDot"></span>
+                                <span id="docsStatusText">Не активен</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tabs">
+            <button class="tab on" onclick="showTab('upload', this)">📄 Upload</button>
+            <button class="tab" onclick="showTab('watch', this)">👁️ Folder Watch</button>
+            <button class="tab" onclick="showTab('results', this)">📊 Results</button>
+        </div>
+
+        <div class="panel on" id="p-upload">
+            <div class="drop" id="dropZone">
+                <div class="drop-icon">📄</div>
+                <h3>Drop files here</h3>
+                <p>or click to browse your documents</p>
+                <div class="tags">
+                    <span class="tag">PDF</span>
+                    <span class="tag">JPG</span>
+                    <span class="tag">PNG</span>
+                    <span class="tag">TIFF</span>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif">
+            </div>
+
+            <div class="proc" id="proc">
+                <div class="spin"></div>
+                <span class="proc-text" id="procTxt">Processing documents...</span>
+            </div>
+
+            <div class="stats-grid" id="stats" style="display: none;">
+                <div class="stat-card"><div class="stat-value" id="sTotal">0</div><div class="stat-label">Processed</div></div>
+                <div class="stat-card"><div class="stat-value" id="sOk">0</div><div class="stat-label">Success</div></div>
+                <div class="stat-card"><div class="stat-value" id="sRev">0</div><div class="stat-label">Review</div></div>
+                <div class="stat-card"><div class="stat-value" id="sErr">0</div><div class="stat-label">Errors</div></div>
+            </div>
+
+            <div class="card" id="resCard" style="display: none;">
+                <div class="card-head">
+                    <div class="card-title">Recent Results <span class="badge" id="resCnt">0</span></div>
+                    <div class="btn-group">
+                        <button class="btn" onclick="openF('output')">📁 Output</button>
+                        <button class="btn btn-p" onclick="doExport()">💾 Export Excel</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr>
+                            <th onclick="sortTable('status')" data-col="status">Status<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('vendor')" data-col="vendor">Vendor<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('invoice_number')" data-col="invoice_number">Invoice #<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('internal_number')" data-col="internal_number">Intern #<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('vat_id')" data-col="vat_id">VAT ID<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('confidence')" data-col="confidence">Confidence<span class="sort-arrow"></span></th>
+                        </tr></thead>
+                        <tbody id="resTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="p-watch">
+            <div class="gdrive-hint" id="gdriveHint" style="display: none;">
+                <h4>💡 Google Drive Detected</h4>
+                <p>Click a path to use as watch folder:</p>
+                <div class="paths" id="gdrivePaths"></div>
+            </div>
+
+            <div class="section">
+                <h3>👁️ Folder Monitoring</h3>
+                <p class="desc">Watch a folder for new documents. Works with Google Drive Desktop, OneDrive, Dropbox.</p>
+
+                <div id="watchOff">
+                    <div class="input-group">
+                        <label>Watch Folder Path</label>
+                        <div class="input-row">
+                            <input type="text" id="watchPath" placeholder="C:\Documents\Invoices or ~/Documents/Invoices">
+                            <button class="btn" onclick="browsePath('watchPath')">📁 Browse</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-p" onclick="startWatch()">▶️ Start Watching</button>
+                </div>
+
+                <div id="watchOn" style="display: none;">
+                    <div class="watch-status">
+                        <div class="watch-info">
+                            <div class="watch-icon">👁️</div>
+                            <div class="watch-details">
+                                <p>Actively Watching</p>
+                                <small id="watchPathDisplay">-</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="stopWatch()">⏹️ Stop</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="p-results">
+            <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="stat-card"><div class="stat-value" id="sTotal2">0</div><div class="stat-label">Total</div></div>
+                <div class="stat-card"><div class="stat-value" id="sOk2">0</div><div class="stat-label">Success</div></div>
+                <div class="stat-card"><div class="stat-value" id="sRev2">0</div><div class="stat-label">Review</div></div>
+                <div class="stat-card"><div class="stat-value" id="sErr2">0</div><div class="stat-label">Errors</div></div>
+                <div class="stat-card"><div class="stat-value" id="sConf">0%</div><div class="stat-label">Avg Conf</div></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title">All Results <span class="badge" id="allCnt">0</span></div>
+                    <div class="btn-group">
+                        <button class="btn btn-danger" onclick="clearResults()">🗑️ Clear</button>
+                        <button class="btn btn-p" onclick="doExport()">💾 Export Excel</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr>
+                            <th onclick="sortTable('status')" data-col="status">Status<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('vendor')" data-col="vendor">Vendor<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('invoice_number')" data-col="invoice_number">Invoice #<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('internal_number')" data-col="internal_number">Intern #<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('vat_id')" data-col="vat_id">VAT ID<span class="sort-arrow"></span></th>
+                            <th onclick="sortTable('confidence')" data-col="confidence">Confidence<span class="sort-arrow"></span></th>
+                        </tr></thead>
+                        <tbody id="allTbody"><tr><td colspan="6" class="empty">No documents processed yet</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Windows Setup Modal -->
+    <div class="modal-overlay" id="windowsModal" onclick="closeModal('windows')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>Windows Setup</h2>
+                <button class="modal-close" onclick="closeModal('windows')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>📋 Требования</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        Windows 10/11 • Python 3.10+ • Tesseract OCR • Poppler
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <h3>📥 Шаг 1: Скачайте зависимости</h3>
+                    <div class="arch-selector" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button class="arch-btn on" id="arch64" onclick="setArch(64)">64-bit</button>
+                        <button class="arch-btn" id="arch32" onclick="setArch(32)">32-bit</button>
+                    </div>
+                    <div class="modal-links" id="downloadLinks64">
+                        <a href="https://www.python.org/ftp/python/3.14.2/python-3.14.2-amd64.exe" target="_blank" class="modal-link">
+                            <span>🐍</span> Python 3.14.2 (x64)
+                        </a>
+                        <a href="https://github.com/UB-Mannheim/tesseract/releases/download/v5.5.0.20241111/tesseract-ocr-w64-setup-5.5.0.20241111.exe" target="_blank" class="modal-link">
+                            <span>🔤</span> Tesseract 5.5.0 (x64)
+                        </a>
+                        <a href="https://github.com/oschwartz10612/poppler-windows/releases/download/v24.08.0-0/Release-24.08.0-0.zip" target="_blank" class="modal-link">
+                            <span>📑</span> Poppler 24.08
+                        </a>
+                    </div>
+                    <div class="modal-links" id="downloadLinks32" style="display: none;">
+                        <a href="https://www.python.org/ftp/python/3.14.2/python-3.14.2.exe" target="_blank" class="modal-link">
+                            <span>🐍</span> Python 3.14.2 (x86)
+                        </a>
+                        <a href="https://github.com/UB-Mannheim/tesseract/releases/download/v5.5.0.20241111/tesseract-ocr-w32-setup-5.5.0.20241111.exe" target="_blank" class="modal-link">
+                            <span>🔤</span> Tesseract 5.5.0 (x86)
+                        </a>
+                        <a href="https://github.com/oschwartz10612/poppler-windows/releases/download/v24.08.0-0/Release-24.08.0-0.zip" target="_blank" class="modal-link">
+                            <span>📑</span> Poppler 24.08
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>🔧 Шаг 2: Установка</h3>
+                    <div style="font-size: 13px; line-height: 1.8;">
+                        <p><strong>Python:</strong> Запустите установщик, отметьте "Add to PATH"</p>
+                        <p><strong>Tesseract:</strong> При установке выберите языки: <em>German, English</em></p>
+                        <p><strong>Poppler:</strong> Распакуйте ZIP в папку проекта <code style="background: var(--bg-card); padding: 2px 6px; border-radius: 4px;">./poppler/</code></p>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>▶️ Шаг 3: Запуск</h3>
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+                        <div>install.bat    <span style="color: var(--text-muted);"># первый запуск</span></div>
+                        <div>run.bat        <span style="color: var(--text-muted);"># запуск приложения</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- macOS Setup Modal -->
+    <div class="modal-overlay" id="macModal" onclick="closeModal('mac')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>macOS Setup</h2>
+                <button class="modal-close" onclick="closeModal('mac')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>📋 Требования</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        macOS 10.15+ (Catalina или новее) • Homebrew
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <h3>🍺 Шаг 1: Установка Homebrew</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Если Homebrew ещё не установлен:</p>
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+                        <div>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>📦 Шаг 2: Установка зависимостей</h3>
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+                        <div>brew install python@3.11 tesseract tesseract-lang poppler</div>
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                        Автоматически установятся Python, Tesseract с немецким и английским языками, и Poppler.
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <h3>▶️ Шаг 3: Запуск</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">В Terminal.app, в папке проекта:</p>
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+                        <div>./install.sh   <span style="color: var(--text-muted);"># первый запуск</span></div>
+                        <div>./run.sh       <span style="color: var(--text-muted);"># запуск приложения</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-copy">MAE IDP v1.4.0</div>
+                <div class="footer-copy footer-copyright">© 2026 McBile AI-Engine</div>
+            </div>
+            <div class="footer-right">
+                <a href="#" class="footer-link" onclick="showModal('windows'); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg><span class="link-text">Windows</span></a>
+                <a href="https://github.com/mcbile/mae-idp" target="_blank" class="footer-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg><span class="link-text">GitHub</span></a>
+                <a href="#" class="footer-link" onclick="showModal('mac'); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><span class="link-text">macOS</span></a>
+                <a href="#" class="footer-link" onclick="downloadDocs(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><span class="link-text">Manual</span></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let results = [];
+        let sortCol = null;
+        let sortDir = 'desc';
+
+        // XSS protection
+        function escapeHtml(text) {
+            if (text == null) return '—';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function sortTable(col) {
+            if (sortCol === col) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = 'desc';
+            }
+
+            // Update header styles
+            document.querySelectorAll('th[data-col]').forEach(th => {
+                th.classList.remove('sorted', 'asc', 'desc');
+                if (th.dataset.col === col) {
+                    th.classList.add('sorted', sortDir);
+                }
+            });
+
+            updateUI();
+        }
+
+        function getSortedResults() {
+            if (!sortCol) return results.slice().reverse();
+
+            return results.slice().sort((a, b) => {
+                let valA = a[sortCol] || '';
+                let valB = b[sortCol] || '';
+
+                // Numeric sort for confidence
+                if (sortCol === 'confidence') {
+                    valA = parseInt(valA) || 0;
+                    valB = parseInt(valB) || 0;
+                } else {
+                    valA = String(valA).toLowerCase();
+                    valB = String(valB).toLowerCase();
+                }
+
+                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function toggleTheme() {
+            const h = document.documentElement;
+            h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', h.dataset.theme);
+        }
+
+        // Load saved theme
+        const saved = localStorage.getItem('theme');
+        if (saved) document.documentElement.dataset.theme = saved;
+
+        // Setup Modals
+        function showModal(type) {
+            document.getElementById(type + 'Modal').classList.add('on');
+        }
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').classList.remove('on');
+        }
+        function setArch(bits) {
+            document.getElementById('arch32').classList.remove('on');
+            document.getElementById('arch64').classList.remove('on');
+            document.getElementById('arch' + bits).classList.add('on');
+            document.getElementById('downloadLinks32').style.display = bits === 32 ? 'flex' : 'none';
+            document.getElementById('downloadLinks64').style.display = bits === 64 ? 'flex' : 'none';
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal('windows');
+                closeModal('mac');
+            }
+        });
+
+        // Download Docs PDF from GitHub
+        function downloadDocs() {
+            window.open('https://github.com/mcbile/mae-idp/raw/main/README.pdf', '_blank');
+        }
+
+        function showTab(n, b) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+            document.getElementById('p-' + n).classList.add('on');
+            b.classList.add('on');
+        }
+
+        async function checkStatus() {
+            try {
+                const r = await fetch('/api/status');
+                const d = await r.json();
+
+                // OCR status
+                const ocrOk = d.ocr;
+                document.getElementById('ocrPill').className = 'pill ocr ' + (ocrOk ? 'ok' : 'err');
+                document.getElementById('ocrStatusDot').className = 'status-dot ' + (ocrOk ? 'ok' : 'err');
+                document.getElementById('ocrStatusText').textContent = ocrOk ? 'Подключен' : 'Не найден';
+
+                // Watcher status
+                const w = d.watcher;
+                document.getElementById('watchPill').className = 'pill docs ' + (w.running ? 'ok' : 'err');
+                document.getElementById('docsStatusDot').className = 'status-dot ' + (w.running ? 'ok' : 'err');
+                document.getElementById('docsStatusText').textContent = w.running ? 'Активен: ' + w.watch_path : 'Не активен';
+
+                if (w.running) {
+                    document.getElementById('watchOff').style.display = 'none';
+                    document.getElementById('watchOn').style.display = 'block';
+                    document.getElementById('watchPathDisplay').textContent = w.watch_path;
+                } else {
+                    document.getElementById('watchOff').style.display = 'block';
+                    document.getElementById('watchOn').style.display = 'none';
+                }
+                if (d.results_count !== results.length) loadResults();
+            } catch (e) {
+                console.error('Status check failed:', e);
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const r = await fetch('/api/results');
+                const d = await r.json();
+                results = d.results || [];
+                updateUI();
+            } catch (e) {
+                console.error('Failed to load results:', e);
+            }
+        }
+
+        async function detectGDrive() {
+            try {
+                const r = await fetch('/api/detect-gdrive');
+                const d = await r.json();
+                if (d.paths && d.paths.length) {
+                    document.getElementById('gdriveHint').style.display = 'block';
+                    document.getElementById('gdrivePaths').innerHTML = d.paths.map(p =>
+                        `<span class="path-tag" onclick="document.getElementById('watchPath').value='${p.replace(/\\/g, '\\\\')}'">📁 ${p}</span>`
+                    ).join('');
+                }
+            } catch (e) {
+                console.error('Failed to detect Google Drive:', e);
+            }
+        }
+
+        checkStatus();
+        detectGDrive();
+        loadResults();
+        setInterval(checkStatus, 3000);
+
+        const dz = document.getElementById('dropZone');
+        const fi = document.getElementById('fileInput');
+
+        dz.onclick = () => fi.click();
+
+        ['dragenter', 'dragover'].forEach(e => dz.addEventListener(e, ev => {
+            ev.preventDefault();
+            dz.style.borderColor = 'var(--gradient-4)';
+            dz.style.background = 'var(--bg-card-alt)';
+        }));
+
+        ['dragleave', 'drop'].forEach(e => dz.addEventListener(e, ev => {
+            ev.preventDefault();
+            dz.style.borderColor = '';
+            dz.style.background = '';
+        }));
+
+        dz.addEventListener('drop', e => handle(e.dataTransfer.files));
+        fi.addEventListener('change', () => handle(fi.files));
+
+        async function handle(files) {
+            if (!files.length) return;
+            const pr = document.getElementById('proc');
+            const tx = document.getElementById('procTxt');
+            pr.classList.add('on');
+
+            for (let i = 0; i < files.length; i++) {
+                tx.textContent = 'Processing ' + (i + 1) + '/' + files.length + ' documents...';
+                const fd = new FormData();
+                fd.append('file', files[i]);
+                try {
+                    const r = await fetch('/api/parse', { method: 'POST', body: fd });
+                    const d = await r.json();
+                    if (d.success) {
+                        results.push(d.data);
+                        updateUI();
+                    }
+                } catch (e) {
+                    results.push({ filename: files[i].name, status: 'error', error: e.message });
+                    updateUI();
+                }
+            }
+
+            pr.classList.remove('on');
+            fi.value = '';
+        }
+
+        function updateUI() {
+            const t = results.length;
+            const ok = results.filter(r => r.status === 'success').length;
+            const rv = results.filter(r => r.status === 'review').length;
+            const er = results.filter(r => r.status === 'error').length;
+            const avg = t ? Math.round(results.reduce((a, r) => a + (r.confidence || 0), 0) / t) : 0;
+
+            if (t) {
+                document.getElementById('stats').style.display = 'grid';
+                document.getElementById('resCard').style.display = 'block';
+            }
+
+            document.getElementById('sTotal').textContent = t;
+            document.getElementById('sOk').textContent = ok;
+            document.getElementById('sRev').textContent = rv;
+            document.getElementById('sErr').textContent = er;
+            document.getElementById('resCnt').textContent = t;
+
+            document.getElementById('sTotal2').textContent = t;
+            document.getElementById('sOk2').textContent = ok;
+            document.getElementById('sRev2').textContent = rv;
+            document.getElementById('sErr2').textContent = er;
+            document.getElementById('sConf').textContent = avg + '%';
+            document.getElementById('allCnt').textContent = t;
+
+            const html = getSortedResults().map(r => {
+                const sc = r.status === 'success' ? 'ok' : r.status === 'review' ? 'warn' : 'err';
+                const cc = r.confidence >= 80 ? 'linear-gradient(90deg, #2BAAD3, #00C853)' :
+                           r.confidence >= 50 ? 'linear-gradient(90deg, #F8AF08, #F65006)' :
+                           'linear-gradient(90deg, #F54342, #F4396E)';
+                const conf = parseInt(r.confidence) || 0;
+                return `<tr>
+                    <td><span class="st st-${sc}">${escapeHtml(r.status)}</span></td>
+                    <td>${escapeHtml(r.vendor)}</td>
+                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.invoice_number)}</td>
+                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.internal_number)}</td>
+                    <td style="font-family: JetBrains Mono; font-size: 11px">${escapeHtml(r.vat_id)}</td>
+                    <td>
+                        <div class="conf">
+                            <div class="conf-bar"><div class="conf-fill" style="width: ${conf}%; background: ${cc}"></div></div>
+                            <span class="conf-val">${conf}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('resTbody').innerHTML = html || '<tr><td colspan="6" class="empty">No documents processed yet</td></tr>';
+            document.getElementById('allTbody').innerHTML = html || '<tr><td colspan="6" class="empty">No documents processed yet</td></tr>';
+        }
+
+        async function doExport() {
+            if (!results.length) return alert('No data to export');
+            const r = await fetch('/api/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ results: results })
+            });
+            const b = await r.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = 'MAE_Report.xlsx';
+            a.click();
+        }
+
+        async function openF(n) { await fetch('/api/open/' + n); }
+
+        async function browsePath(id) {
+            const r = await fetch('/api/browse');
+            const d = await r.json();
+            if (d.path) document.getElementById(id).value = d.path;
+        }
+
+        async function startWatch() {
+            const wp = document.getElementById('watchPath').value.trim();
+            if (!wp) return alert('Please select a folder first');
+            const r = await fetch('/api/watcher/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ watch_path: wp })
+            });
+            const d = await r.json();
+            if (d.success) checkStatus();
+            else alert('Failed to start watcher');
+        }
+
+        async function stopWatch() {
+            await fetch('/api/watcher/stop', { method: 'POST' });
+            checkStatus();
+        }
+
+        async function clearResults() {
+            if (!confirm('Clear all results?')) return;
+            await fetch('/api/results', { method: 'DELETE' });
+            results = [];
+            updateUI();
+        }
+    </script>
+</body>
+</html>
