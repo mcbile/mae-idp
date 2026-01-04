@@ -389,3 +389,40 @@ print(text)
 - Path traversal защита через `PurePath().name`
 - Thread-safe доступ к парсеру через Lock
 - Нет rate limiting (возможен DoS) — см. BACKLOG.md
+
+## Deployment (Docker / Render)
+
+### Docker
+
+```bash
+# Сборка образа
+docker build -t mae-idp .
+
+# Запуск контейнера
+docker run -p 8766:8766 mae-idp
+```
+
+**Dockerfile** включает:
+- Python 3.12-slim
+- Tesseract OCR (deu, eng)
+- Poppler-utils
+- libzbar0
+
+### Render.com
+
+1. Подключи репозиторий на [render.com](https://render.com)
+2. Render автоматически обнаружит `render.yaml`
+3. Нажми "Create Web Service"
+
+**Важно:**
+- `pywebview` закомментирован в requirements.txt (не работает в headless)
+- PORT берётся из переменной окружения: `int(os.environ.get("PORT", 8766))`
+
+### Файлы деплоя
+
+| Файл | Назначение |
+|------|------------|
+| `Dockerfile` | Docker образ с системными зависимостями |
+| `render.yaml` | Конфиг для Render.com |
+| `runtime.txt` | Версия Python для PaaS |
+| `main.py` | Точка входа для ASGI серверов |
