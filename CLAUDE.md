@@ -311,16 +311,36 @@ r'SN\s*:?\s*0*(\d+)'
 
 # Invoice number
 r'Rechnungsnummer[:\s]*([A-Z0-9-]+)'
+r'Rechnungs[- ]?Nr[.:\s]*([A-Z0-9-]+)'
 r'Rechnung[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)'
 r'Invoice[- ]?(?:Nr|No|Number)[.:\s]*([A-Z0-9-]+)'
 r'Beleg[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)'
-r'Referenz(?:nummer)?[:\s]*([A-Z0-9-]+)'
+r'INV[- ]?(?:Nr|No|Number)?[.:\s]*([A-Z0-9-]+)'
+r'RE[- ]?(?:Nr|No|Nummer)?[.:\s]*([A-Z0-9-]+)'
 
-# VAT ID
-r'USt[.-]?(?:Id(?:Nr)?|Ident)[.:\s]*([A-Z]{2}\s*\d[\d\s]{7,})'
-r'VAT[.\s-]*(?:ID|No|Number)?[.:\s]*([A-Z]{2}\s*\d[\d\s]{7,})'
-r'(?:UID|TVA|IVA)[.:\s-]*([A-Z]{2}\s*\d[\d\s]{7,})'
+# VAT ID (с валидацией по формату страны)
+r'USt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*'
+r'Umsatzsteuer[- ]?(?:Id(?:entifikations)?(?:nummer)?|Nr)[.:\s]*'
+r'MwSt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*'
+r'VAT[.\s-]*(?:ID|No|Number|Reg)?[.:\s]*'
+r'(?:UID|TVA|IVA|BTW|NIF|CIF)[.:\s-]*'
+
+# Исключения (НЕ являются номером счёта)
+EXCLUDED_INVOICE_PATTERNS = [
+    'Kundennummer', 'Referenznummer', 'Accountnummer',
+    'Vorgangsnummer', 'Bestellnummer', 'Auftragsnummer'
+]
 ```
+
+## VAT Validation
+
+VAT ID проверяются по формату страны (28 стран):
+- DE: 9 цифр (DE123456789)
+- AT: ATU + 8 цифр
+- CH: CHE + 9 цифр
+- NL: 9 цифр + B + 2 цифры
+- GB: 9-12 цифр
+- и другие (PL, CZ, FR, IT, ES, IE, PT, SE, DK, FI, LT, LV, EE, SK, HU, SI, RO, BG, HR, EL, CY, MT, LU, BE)
 
 ## Thread Safety
 

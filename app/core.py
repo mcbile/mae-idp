@@ -16,6 +16,70 @@ class ConfidenceScore:
     THRESHOLD = 50  # minimum for "success" status
 
 
+# Исключения — это покупатели, не вендоры
+EXCLUDED_VENDORS = ["sicherheit nord"]
+
+# VAT покупателей — исключить из результатов
+EXCLUDED_VAT = ["DE135198442"]
+
+# Паттерны которые НЕ являются номером счёта
+EXCLUDED_INVOICE_PATTERNS = [
+    r'Kunden[- ]?(?:Nr|No|Nummer|nummer)',
+    r'Referenz[- ]?(?:Nr|No|Nummer|nummer)?',
+    r'Account[- ]?(?:Nr|No|Nummer|nummer)',
+    r'Vorgang[s]?[- ]?(?:Nr|No|Nummer|nummer)',
+    r'Bestell[- ]?(?:Nr|No|Nummer|nummer)',
+    r'Auftrags[- ]?(?:Nr|No|Nummer|nummer)',
+]
+
+# Валидация VAT по формату страны
+VAT_FORMATS = {
+    'DE': r'^DE\d{9}$',
+    'AT': r'^ATU\d{8}$',
+    'CH': r'^CHE[\d]{9}$',
+    'PL': r'^PL\d{10}$',
+    'CZ': r'^CZ\d{8,10}$',
+    'NL': r'^NL\d{9}B\d{2}$',
+    'BE': r'^BE[01]\d{9}$',
+    'FR': r'^FR[A-Z0-9]{2}\d{9}$',
+    'IE': r'^IE\d{7}[A-Z]{1,2}$',
+    'IT': r'^IT\d{11}$',
+    'ES': r'^ES[A-Z]\d{7}[A-Z0-9]$',
+    'GB': r'^GB\d{9,12}$',
+    'PT': r'^PT\d{9}$',
+    'SE': r'^SE\d{12}$',
+    'DK': r'^DK\d{8}$',
+    'FI': r'^FI\d{8}$',
+    'LT': r'^LT\d{9,12}$',
+    'LV': r'^LV\d{11}$',
+    'EE': r'^EE\d{9}$',
+    'SK': r'^SK\d{10}$',
+    'HU': r'^HU\d{8}$',
+    'SI': r'^SI\d{8}$',
+    'RO': r'^RO\d{2,10}$',
+    'BG': r'^BG\d{9,10}$',
+    'HR': r'^HR\d{11}$',
+    'EL': r'^EL\d{9}$',
+    'CY': r'^CY\d{8}[A-Z]$',
+    'MT': r'^MT\d{8}$',
+    'LU': r'^LU\d{8}$',
+}
+
+
+def validate_vat_format(vat: str) -> bool:
+    """Проверяет соответствие VAT формату страны"""
+    vat_clean = re.sub(r'[\s./-]', '', vat.upper())
+    country = vat_clean[:2]
+    if country == 'CH':
+        country = vat_clean[:3]  # CHE для Швейцарии
+    if country in VAT_FORMATS:
+        return bool(re.match(VAT_FORMATS[country], vat_clean))
+    # Для AT проверяем ATU
+    if vat_clean[:3] == 'ATU':
+        return bool(re.match(VAT_FORMATS.get('AT', ''), vat_clean))
+    return False
+
+
 # Известные вендоры и их паттерны
 KNOWN_VENDORS = {
     "Amazon": ["amazon", "amzn"],
@@ -173,7 +237,10 @@ class BaseOCRProcessor:
         # Try email domain
         match = re.search(r'@([a-zA-Z0-9-]+)\.[a-z]{2,}', text)
         if match:
-            return match.group(1).title()
+            domain = match.group(1).title()
+            # Проверяем что это не исключённый vendor
+            if not any(excl in domain.lower() for excl in EXCLUDED_VENDORS):
+                return domain
 
         # Try "from/von" patterns
         for pattern in [r'(?:von|from|verkauft von|sold by)[:\s]+([A-Z][a-zA-Z0-9\s&]+?)(?:\s*[,\n]|$)',
@@ -181,6 +248,9 @@ class BaseOCRProcessor:
             match = re.search(pattern, text, re.I)
             if match:
                 vendor = match.group(1).strip()
+                # Проверяем что это не исключённый vendor
+                if any(excl in vendor.lower() for excl in EXCLUDED_VENDORS):
+                    continue
                 words = vendor.split()[:3]
                 return " ".join(words)
         return None
@@ -208,15 +278,28 @@ class BaseOCRProcessor:
         """Extract invoice number from text"""
         patterns = [
             r'Rechnungsnummer[:\s]*([A-Z0-9-]+)',
+            r'Rechnungs[- ]?Nr[.:\s]*([A-Z0-9-]+)',
             r'Rechnung[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)',
             r'Invoice[- ]?(?:Nr|No|Number)[.:\s]*([A-Z0-9-]+)',
             r'Beleg[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)',
-            r'Referenz(?:nummer)?[:\s]*([A-Z0-9-]+)',
-            r'(?:Nr|No)[.:\s]+([A-Z]{2}[A-Z0-9]{8,})',
+            r'INV[- ]?(?:Nr|No|Number)?[.:\s]*([A-Z0-9-]+)',
+            r'RE[- ]?(?:Nr|No|Nummer)?[.:\s]*([A-Z0-9-]+)',
         ]
+
         for pattern in patterns:
             match = re.search(pattern, text, re.I)
             if match:
+                # Проверяем что это не исключённый паттерн
+                match_start = max(0, match.start() - 20)
+                context = text[match_start:match.start()]
+                is_excluded = False
+                for excl_pattern in EXCLUDED_INVOICE_PATTERNS:
+                    if re.search(excl_pattern, context, re.I):
+                        is_excluded = True
+                        break
+                if is_excluded:
+                    continue
+
                 inv_num = match.group(1).strip()
                 if len(inv_num) >= 5:
                     return inv_num
@@ -225,16 +308,23 @@ class BaseOCRProcessor:
     def extract_vat_id(self, text: str) -> Optional[str]:
         """Extract VAT ID from text"""
         patterns = [
-            r'USt[.-]?(?:Id(?:Nr)?|Ident)[.:\s]*([A-Z]{2}\s*\d[\d\s]{7,})',
-            r'VAT[.\s-]*(?:ID|No|Number)?[.:\s]*([A-Z]{2}\s*\d[\d\s]{7,})',
-            r'(?:UID|TVA|IVA)[.:\s-]*([A-Z]{2}\s*\d[\d\s]{7,})',
-            r'\b([A-Z]{2}\d{9,12})\b',
+            r'USt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'USt[.-]?ID[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'Umsatzsteuer[- ]?(?:Id(?:entifikations)?(?:nummer)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'MwSt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'VAT[.\s-]*(?:ID|No|Number|Reg)?[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'VAT[- ]?ID[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'(?:UID|TVA|IVA|BTW|NIF|CIF)[.:\s-]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
         ]
         for pattern in patterns:
             match = re.search(pattern, text, re.I)
             if match:
-                vat = re.sub(r'\s+', '', match.group(1).upper())
-                if len(vat) >= 9:
+                vat = re.sub(r'[\s./-]', '', match.group(1).upper())
+                # Проверяем исключения
+                if vat in EXCLUDED_VAT:
+                    continue
+                # Валидируем формат по стране
+                if validate_vat_format(vat):
                     return vat
         return None
 

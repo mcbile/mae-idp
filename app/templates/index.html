@@ -413,6 +413,49 @@
         .btn-danger { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); }
         .btn-danger:hover { border-color: #ef4444; color: #ef4444; }
 
+        /* Export dropdown */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            min-width: 140px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            overflow: hidden;
+        }
+        .export-dropdown-content.show { display: block; }
+        .export-dropdown-content button {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .export-dropdown-content button:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .export-dropdown-content button:not(:last-child) {
+            border-bottom: 1px solid var(--border-color);
+        }
+
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th {
@@ -870,7 +913,14 @@
                     <div class="card-title">Recent Results <span class="badge" id="resCnt">0</span></div>
                     <div class="btn-group">
                         <button class="btn" onclick="openF('output')">📁 Output</button>
-                        <button class="btn btn-p" onclick="doExport()">💾 Export Excel</button>
+                        <div class="export-dropdown">
+                            <button class="btn btn-p" onclick="toggleExportDropdown(event)">💾 Export</button>
+                            <div class="export-dropdown-content" id="exportDropdown1">
+                                <button onclick="doExport('csv')">CSV</button>
+                                <button onclick="doExport('md')">Markdown</button>
+                                <button onclick="doExport('txt')">Text</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="table-wrapper">
@@ -940,7 +990,14 @@
                     <div class="card-title">All Results <span class="badge" id="allCnt">0</span></div>
                     <div class="btn-group">
                         <button class="btn btn-danger" onclick="clearResults()">🗑️ Clear</button>
-                        <button class="btn btn-p" onclick="doExport()">💾 Export Excel</button>
+                        <div class="export-dropdown">
+                            <button class="btn btn-p" onclick="toggleExportDropdown(event)">💾 Export</button>
+                            <div class="export-dropdown-content" id="exportDropdown2">
+                                <button onclick="doExport('csv')">CSV</button>
+                                <button onclick="doExport('md')">Markdown</button>
+                                <button onclick="doExport('txt')">Text</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="table-wrapper">
@@ -1335,17 +1392,31 @@
             document.getElementById('allTbody').innerHTML = html || '<tr><td colspan="6" class="empty">No documents processed yet</td></tr>';
         }
 
-        async function doExport() {
+        function toggleExportDropdown(event) {
+            event.stopPropagation();
+            const dropdown = event.target.nextElementSibling;
+            document.querySelectorAll('.export-dropdown-content').forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.export-dropdown-content').forEach(d => d.classList.remove('show'));
+        });
+
+        async function doExport(format) {
+            document.querySelectorAll('.export-dropdown-content').forEach(d => d.classList.remove('show'));
             if (!results.length) return alert('No data to export');
             const r = await fetch('/api/export', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ results: results })
+                body: JSON.stringify({ results: results, format: format })
             });
             const b = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(b);
-            a.download = 'MAE_Report.xlsx';
+            a.download = `MAE_Report.${format}`;
             a.click();
         }
 

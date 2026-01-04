@@ -405,13 +405,68 @@ async def clear_results():
 
 @app.post("/api/export")
 async def export(request: Request):
-    import pandas as pd
-    data = (await request.json()).get("results", results)
+    body = await request.json()
+    data = body.get("results", results)
+    fmt = body.get("format", "csv").lower()
+
     if not data:
         raise HTTPException(400, "No data")
-    f = Config.OUTPUT_DIR / f"MAE_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
-    pd.DataFrame(data).to_excel(f, index=False)
-    return FileResponse(f, filename=f.name)
+
+    if fmt not in ("csv", "md", "txt"):
+        raise HTTPException(400, "Unsupported format. Use: csv, md, txt")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"MAE_{timestamp}.{fmt}"
+    filepath = Config.OUTPUT_DIR / filename
+
+    # Define columns
+    columns = ["filename", "status", "vendor", "invoice_number", "internal_number", "vat_id", "confidence", "timestamp"]
+
+    if fmt == "csv":
+        # CSV format
+        lines = [";".join(columns)]
+        for row in data:
+            lines.append(";".join(str(row.get(c, "")) for c in columns))
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        media_type = "text/csv"
+
+    elif fmt == "md":
+        # Markdown table
+        lines = ["# MAE Export Report", "", f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ""]
+        headers = ["Status", "Vendor", "Invoice #", "Internal #", "VAT ID", "Confidence"]
+        lines.append("| " + " | ".join(headers) + " |")
+        lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+        for row in data:
+            cells = [
+                row.get("status", ""),
+                row.get("vendor", "") or "—",
+                row.get("invoice_number", "") or "—",
+                row.get("internal_number", "") or "—",
+                row.get("vat_id", "") or "—",
+                f"{row.get('confidence', 0)}%"
+            ]
+            lines.append("| " + " | ".join(cells) + " |")
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        media_type = "text/markdown"
+
+    else:  # txt
+        # Plain text table
+        lines = ["MAE Export Report", "=" * 40, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ""]
+        for i, row in enumerate(data, 1):
+            lines.append(f"[{i}] {row.get('filename', 'Unknown')}")
+            lines.append(f"    Status:   {row.get('status', '')}")
+            lines.append(f"    Vendor:   {row.get('vendor', '') or '—'}")
+            lines.append(f"    Invoice:  {row.get('invoice_number', '') or '—'}")
+            lines.append(f"    Internal: {row.get('internal_number', '') or '—'}")
+            lines.append(f"    VAT ID:   {row.get('vat_id', '') or '—'}")
+            lines.append(f"    Confidence: {row.get('confidence', 0)}%")
+            lines.append("")
+        lines.append("=" * 40)
+        lines.append(f"Total: {len(data)} documents")
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        media_type = "text/plain"
+
+    return FileResponse(filepath, filename=filename, media_type=media_type)
 
 
 def _open_path(path: Path):

@@ -14,6 +14,17 @@
 - **OCR Cache** — кеширование результатов по SHA-256 hash файла (`cache.py`)
 - **pytest** — добавлен в requirements.txt
 
+### Changed
+- **Export форматы** — заменён Excel экспорт на CSV, Markdown, TXT с dropdown выбором
+- **Исправлен баг экспорта** — файлы больше не скачиваются как `.xlsx.txt`
+- **Invoice паттерны** — добавлены Rechnungs-Nr, INV, RE; убраны Referenz и общий Nr/No
+- **VAT паттерны** — добавлены MwSt, Umsatzsteuer, VAT-ID и др.
+- **VAT валидация** — проверка формата по стране (DE, AT, CH, PL, GB и др.)
+- **Исключения** — добавлены EXCLUDED_VENDORS, EXCLUDED_VAT, EXCLUDED_INVOICE_PATTERNS для фильтрации покупателей и ложных срабатываний (Kundennummer, Referenznummer и т.п.)
+
+### Removed
+- **Excel экспорт** — убран в пользу CSV/MD/TXT (pandas/openpyxl больше не используются для экспорта)
+
 ---
 
 ## [1.5.0] - 2026-01-04
