@@ -51,11 +51,14 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Optional imports for desktop/watcher features
-try:
-    import webview
-    WEBVIEW_OK = True
-except ImportError:
-    WEBVIEW_OK = False
+# Disable webview in server/headless mode (no display)
+WEBVIEW_OK = False
+if os.environ.get("DISPLAY") or sys.platform == "darwin" or sys.platform == "win32":
+    try:
+        import webview
+        WEBVIEW_OK = True
+    except ImportError:
+        pass
 
 try:
     from watchdog.observers import Observer
