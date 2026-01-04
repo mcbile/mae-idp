@@ -1,32 +1,44 @@
 # MAE™ - **IDP** (Intelligent Document Processing)
 ![Version](https://img.shields.io/badge/Version-1.4.0-orange)
-### Автоматическое распознавание счетов и документов с **OCR**. 
+### Автоматическое распознавание счетов и документов с **OCR**.
 ### Извлекает: Vendor, Invoice No, Internal ID & VAT ID
 
 ![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+%20%20|%20%20Linux-navy)
 ![PWA](https://img.shields.io/badge/PWA:-iOS%20%20|%20%20Android-blue)
-![Version](https://img.shields.io/badge/Spec:-Python%203.10+%20%20|%20%20Tesseract%205.4.0+%20%20|%20%20Poppler-purple)
+![Version](https://img.shields.io/badge/Spec:-Python%203.10+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
 
 ---
 
-## 🚀 Быстрая установка
+## 🌐 Онлайн версия (без установки)
+
+**Попробуй прямо сейчас:** [https://mae-idp.onrender.com](https://mae-idp.onrender.com)
+
+> ⚠️ Первый запуск может занять ~30 сек (сервер просыпается)
+
+---
+
+## 🚀 Быстрая установка (локальная версия)
 
 ### Windows
 
-```powershell
-git clone https://github.com/mcbile/mae-idp.git
-cd mae-idp
-install.bat
-```
+1. **Скачай** → [Download ZIP](https://github.com/mcbile/mae-idp/archive/refs/heads/main.zip)
+2. **Распакуй** в любую папку
+3. **Запусти** `install.bat` (первый раз)
+4. **Запусти** `run.bat`
+5. **Открой** http://127.0.0.1:8766
 
 ### macOS / Linux
 
+1. **Скачай** → [Download ZIP](https://github.com/mcbile/mae-idp/archive/refs/heads/main.zip)
+2. **Распакуй** в любую папку
+3. **Открой Терминал** в этой папке
+4. **Выполни:**
 ```bash
-git clone https://github.com/mcbile/mae-idp.git
-cd mae-idp
 chmod +x install.sh run.sh
 ./install.sh
+./run.sh
 ```
+5. **Открой** http://127.0.0.1:8766
 
 ---
 
@@ -148,74 +160,13 @@ ipconfig
 
 ---
 
-## 💻 CLI инструмент (пакетная обработка)
-
-### Windows
-
-```powershell
-python app\batch_rename.py "D:\Invoices" "D:\Sorted"
-
-# Только анализ без копирования
-python app\batch_rename.py "D:\Invoices" "D:\Sorted" --dry-run
-
-# Без Excel отчёта
-python app\batch_rename.py "D:\Invoices" "D:\Sorted" --no-report
-```
-
-### macOS / Linux
-
-```bash
-python3 app/batch_rename.py ~/Documents/Invoices ~/Documents/Sorted
-
-# Только анализ без копирования
-python3 app/batch_rename.py ~/Documents/Invoices ~/Documents/Sorted --dry-run
-
-# Без Excel отчёта
-python3 app/batch_rename.py ~/Documents/Invoices ~/Documents/Sorted --no-report
-```
-
----
-
-## 📁 Структура проекта
-
-```
-mae-idp/
-├── app/
-│   ├── mae.py              # Веб-приложение (FastAPI + WebView)
-│   ├── core.py             # Общая логика OCR (базовый класс)
-│   ├── batch_rename.py     # CLI инструмент пакетной обработки
-│   ├── setup_env.py        # Настройка окружения (Tesseract, Poppler)
-│   └── templates/
-│       └── index.html      # Веб-интерфейс
-├── data/
-│   ├── input/              # Входящие документы (временные)
-│   ├── output/             # Excel отчёты
-│   └── archive/            # Обработанные файлы
-├── install.bat             # Автоустановка (Windows)
-├── install.sh              # Автоустановка (macOS/Linux)
-├── run.bat                 # Запуск GUI (Windows)
-├── run.sh                  # Запуск GUI (macOS/Linux)
-├── requirements.txt        # Python зависимости
-├── CHANGELOG.md            # История изменений
-└── README.md
-```
-
----
-
 ## 🎯 Возможности
 
-### GUI (mae.py)
 - **📄 Drag & Drop** — перетащи файлы в окно
 - **👁️ Folder Watch** — автоматический мониторинг папки
 - **☁️ Cloud Support** — Google Drive Desktop, OneDrive, Dropbox
 - **📊 Excel Export** — выгрузка результатов
 - **🌓 Dark/Light Theme** — переключение темы
-
-### CLI (batch_rename.py)
-- **📂 Пакетная обработка** — обработка целых папок
-- **📁 Автосортировка** — раскладка по папкам вендоров
-- **📊 Excel отчёт** — автоматический отчёт о результатах
-- **🔍 Dry-run режим** — предпросмотр без изменений
 
 ### Поддерживаемые форматы
 - PDF (первая страница)
@@ -242,40 +193,7 @@ Amazon, DHL, UPS, FedEx, Deutsche Telekom, Vodafone, O2, IKEA, MediaMarkt, Satur
 
 ---
 
-## 🔧 Конфигурация
-
-Приложение хранит настройки в `data/config.json`:
-
-```json
-{
-  "watch_path": "G:\\My Drive\\Invoices",
-  "output_path": "G:\\My Drive\\Reports"
-}
-```
-
----
-
-## 🌐 API Endpoints
-
-GUI приложение запускает локальный сервер на `http://127.0.0.1:8766`
-
-| Метод | Endpoint | Описание |
-|-------|----------|----------|
-| GET | `/` | HTML интерфейс |
-| GET | `/api/status` | Статус OCR и Watcher |
-| POST | `/api/parse` | Загрузить и обработать файл |
-| GET | `/api/results` | Получить все результаты |
-| DELETE | `/api/results` | Очистить результаты |
-| POST | `/api/export` | Экспорт в Excel |
-| POST | `/api/watcher/start` | Запустить мониторинг папки |
-| POST | `/api/watcher/stop` | Остановить мониторинг |
-| GET | `/api/browse` | Диалог выбора папки |
-| GET | `/api/detect-gdrive` | Поиск Google Drive папок |
-| GET | `/api/open/{folder}` | Открыть папку в проводнике |
-
----
-
-## 🐛 Troubleshooting
+## 🐛 Проблемы и решения
 
 ### "Tesseract not found"
 
