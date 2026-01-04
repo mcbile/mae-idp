@@ -121,12 +121,12 @@ class BaseOCRProcessor:
         return None
 
     def extract_internal_from_corner(self, img) -> Optional[str]:
-        """Extract handwritten number from top-right corner"""
+        """Extract handwritten number from top-right quarter of document"""
         import cv2
         import pytesseract
 
         h, w = img.shape[:2]
-        corner = img[0:int(h*0.15), int(w*0.75):w]
+        corner = img[0:int(h*0.50), int(w*0.50):w]  # Top-right quarter (50% x 50%)
 
         if len(corner.shape) == 3:
             gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)

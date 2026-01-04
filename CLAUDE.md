@@ -289,7 +289,7 @@ EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif']
 1. **Загрузка** — `load_image(path)` загружает PDF/изображение
 2. **QR-коды** — `extract_qr_codes(img)` извлекает данные из QR/штрих-кодов
 3. **Internal из QR** — `extract_internal_from_qr(qr_data)` ищет формат SN...
-4. **Internal из угла** — `extract_internal_from_corner(img)` ищет рукописный номер (top-right 15%×25%)
+4. **Internal из угла** — `extract_internal_from_corner(img)` ищет рукописный номер в правой верхней четверти (50%×50%)
 5. **OCR** — `run_ocr(img)` распознаёт текст (Tesseract, deu+eng)
 6. **Vendor** — `extract_vendor(text)` ищет известных вендоров или извлекает из email
 7. **Invoice** — `extract_invoice_number(text)` ищет номер счёта
