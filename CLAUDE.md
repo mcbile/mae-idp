@@ -118,7 +118,7 @@ MAE-IDP (Intelligent Document Processing) — кроссплатформенно
 - **python-multipart 0.0.6** — загрузка файлов
 
 **Внешние зависимости:**
-- Tesseract-OCR 5.3.3
+- Tesseract-OCR 5.5.0
   - Windows: `C:\Program Files\Tesseract-OCR`
   - macOS: `/opt/homebrew/bin/tesseract` (Apple Silicon) или `/usr/local/bin/tesseract` (Intel)
   - Linux: `/usr/bin/tesseract`
