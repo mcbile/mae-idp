@@ -13,6 +13,9 @@
 - **Unit-тесты** — добавлены pytest тесты для core.py (extract_vendor, extract_invoice_number, extract_vat_id, extract_internal_from_qr)
 - **CI/CD** — тесты теперь проходят в GitHub Actions
 - **main.py** — точка входа FastAPI для деплоя
+- **Dockerfile** — Docker образ с Tesseract, Poppler, pyzbar
+- **render.yaml** — конфиг для деплоя на Render.com
+- **PORT env variable** — поддержка переменной окружения PORT для облачных платформ
 
 ### Fixed
 - **XSS защита** — добавлена функция `escapeHtml()` для экранирования данных в таблице результатов
@@ -23,6 +26,7 @@
 - **Переименована переменная `R` → `results`** — улучшена читаемость кода в index.html
 - **Удалён неиспользуемый `output_path`** — очистка dead code в FolderWatcher
 - **Версия в install.bat** — обновлена с 1.1.0 до 1.4.0
+- **pywebview закомментирован** — в requirements.txt для совместимости с серверным деплоем
 
 ---
 

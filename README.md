@@ -54,7 +54,7 @@ chmod +x install.sh run.sh
 
 ### Windows — Tesseract
 
-1. Скачай [tesseract-ocr-w64-setup-5.3.3.exe](https://github.com/UB-Mannheim/tesseract/releases)
+1. Скачай [tesseract-ocr-w64-setup-5.5.0.exe](https://github.com/UB-Mannheim/tesseract/releases)
 2. При установке выбери языки: **German**, **English**
 3. Установи в `C:\Program Files\Tesseract-OCR`
 
@@ -196,6 +196,8 @@ mae-idp/
 ├── run.bat                 # Запуск GUI (Windows)
 ├── run.sh                  # Запуск GUI (macOS/Linux)
 ├── requirements.txt        # Python зависимости
+├── Dockerfile              # Docker образ для деплоя
+├── render.yaml             # Конфиг для Render.com
 ├── CHANGELOG.md            # История изменений
 ├── BACKLOG.md              # Планы развития
 ├── CLAUDE.md               # Инструкции для разработки
@@ -311,6 +313,23 @@ cmd /k run.bat
 - Убедись что телефон и компьютер в одной Wi-Fi сети
 - Проверь что firewall не блокирует порт 8766
 - Попробуй отключить VPN
+
+---
+
+## 🐳 Docker / Render деплой
+
+Проект готов к деплою на Render.com:
+
+```bash
+# Локальный запуск через Docker
+docker build -t mae-idp .
+docker run -p 8766:8766 mae-idp
+```
+
+**Render.com:**
+1. Подключи репозиторий на [render.com](https://render.com)
+2. Render автоматически обнаружит `render.yaml`
+3. Нажми "Create Web Service"
 
 ---
 
