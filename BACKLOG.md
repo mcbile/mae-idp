@@ -127,12 +127,14 @@
 
 > После выполнения задачи, перенести её в CHANGELOG.md с датой и версией.
 
-### v1.4.1 (2026-01-04)
-- [x] Fix: XSS защита — добавлена функция escapeHtml()
-- [x] Fix: Обработка ошибок fetch — try/catch в loadResults() и detectGDrive()
-- [x] Refactor: Переименована переменная R → results
-- [x] Refactor: Удалён неиспользуемый output_path
-- [x] Fix: Версия в install.bat обновлена до 1.4.0
+### v1.5.0 (2026-01-04)
+- [x] Онлайн версия — деплой на Render.com
+- [x] Dockerfile + render.yaml
+- [x] Ребрендинг MAE PDF Parser → MAE-IDP
+- [x] README упрощён для обычных пользователей
+- [x] Fix: XSS защита — escapeHtml()
+- [x] Fix: Обработка ошибок fetch
+- [x] Refactor: R → results, удалён output_path
 
 ### v1.4.0 (2026-01-03)
 - [x] Кроссплатформенность: macOS и Linux

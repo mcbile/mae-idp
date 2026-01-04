@@ -1,6 +1,6 @@
 """
 MAE-IDP (Intelligent Document Processing)
-Version 1.4.0 - © 2026 McBile
+Version 1.5.0 - © 2026 McBile
 """
 
 import os
@@ -72,7 +72,7 @@ except ImportError:
 
 class Config:
     APP_NAME = "MAE-IDP"
-    VERSION = "1.4.0"
+    VERSION = "1.5.0"
     HOST = "0.0.0.0"  # Allow access from local network
     PORT = int(os.environ.get("PORT", 8766))  # Render sets PORT env var
     INPUT_DIR = DATA_DIR / "input"

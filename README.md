@@ -1,5 +1,5 @@
 # MAE™ - **IDP** (Intelligent Document Processing)
-![Version](https://img.shields.io/badge/Version-1.4.0-orange)
+![Version](https://img.shields.io/badge/Version-1.5.0-orange)
 ### Автоматическое распознавание счетов и документов с **OCR**.
 ### Извлекает: Vendor, Invoice No, Internal ID & VAT ID
 

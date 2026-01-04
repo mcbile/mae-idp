@@ -9,24 +9,28 @@
 
 ## [Unreleased]
 
+---
+
+## [1.5.0] - 2026-01-04
+
 ### Added
-- **Unit-тесты** — добавлены pytest тесты для core.py (extract_vendor, extract_invoice_number, extract_vat_id, extract_internal_from_qr)
-- **CI/CD** — тесты теперь проходят в GitHub Actions
-- **main.py** — точка входа FastAPI для деплоя
+- **Онлайн версия** — деплой на Render.com (https://mae-idp.onrender.com)
 - **Dockerfile** — Docker образ с Tesseract, Poppler, pyzbar
 - **render.yaml** — конфиг для деплоя на Render.com
 - **PORT env variable** — поддержка переменной окружения PORT для облачных платформ
+- **Unit-тесты** — pytest тесты для core.py
+- **main.py** — точка входа FastAPI для деплоя
 
 ### Fixed
-- **XSS защита** — добавлена функция `escapeHtml()` для экранирования данных в таблице результатов
-- **Обработка ошибок fetch** — добавлены try/catch для `loadResults()` и `detectGDrive()`
+- **XSS защита** — добавлена функция `escapeHtml()` для экранирования данных
+- **Обработка ошибок fetch** — try/catch для `loadResults()` и `detectGDrive()`
 
 ### Changed
-- **Ребрендинг** — переименование проекта с "MAE PDF Parser" на "MAE-IDP" (Intelligent Document Processing)
-- **Переименована переменная `R` → `results`** — улучшена читаемость кода в index.html
-- **Удалён неиспользуемый `output_path`** — очистка dead code в FolderWatcher
-- **Версия в install.bat** — обновлена с 1.1.0 до 1.4.0
-- **pywebview закомментирован** — в requirements.txt для совместимости с серверным деплоем
+- **Ребрендинг** — переименование с "MAE PDF Parser" на "MAE-IDP"
+- **README упрощён** — теперь для обычных пользователей (Download ZIP, без git)
+- **pywebview закомментирован** — для совместимости с серверным деплоем
+- **Переименована переменная `R` → `results`**
+- **Удалён неиспользуемый `output_path`**
 
 ---
 

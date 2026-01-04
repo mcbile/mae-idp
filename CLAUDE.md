@@ -97,7 +97,7 @@ User must understand WHAT changes and HOW it affects the system.
 
 MAE-IDP (Intelligent Document Processing) — кроссплатформенное приложение для интеллектуального распознавания документов (счетов, накладных). Автоматически извлекает данные из PDF, JPG, PNG, TIFF файлов используя OCR (Tesseract) и QR-коды.
 
-**Версия:** 1.4.0
+**Версия:** 1.5.0
 **Платформы:** Windows 10/11, macOS, Linux
 **Язык:** Python 3.10+
 
