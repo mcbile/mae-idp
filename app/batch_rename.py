@@ -82,8 +82,8 @@ class BatchProcessor(BaseOCRProcessor):
             # OCR using base class method
             text = self.run_ocr(img)
 
-            # Извлекаем данные
-            info.vendor = self.extract_vendor(text)
+            # Извлекаем данные (vendor: header → footer → full text)
+            info.vendor = self.extract_vendor(text, img)
             info.invoice_number = self.extract_invoice_number(text)
             info.vat_id = self.extract_vat_id(text)
 

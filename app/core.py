@@ -144,19 +144,38 @@ class BaseOCRProcessor:
             return str(int(numbers[0]))
         return None
 
-    def extract_vendor(self, text: str) -> Optional[str]:
-        """Extract vendor name from text"""
+    def _extract_region(self, img, region: str):
+        """Extract header (top 20%) or footer (bottom 20%) from image"""
+        h, w = img.shape[:2]
+        if region == "header":
+            return img[0:int(h*0.20), :]
+        elif region == "footer":
+            return img[int(h*0.80):h, :]
+        return img
+
+    def _ocr_region(self, img, region: str) -> str:
+        """Run OCR on header or footer region"""
+        import pytesseract
+        region_img = self._extract_region(img, region)
+        processed = self.preprocess_for_ocr(region_img)
+        return pytesseract.image_to_string(processed, lang='deu+eng')
+
+    def _find_vendor_in_text(self, text: str) -> Optional[str]:
+        """Find vendor in text using patterns"""
         text_lower = text.lower()
 
+        # Check known vendors
         for vendor_name, patterns in KNOWN_VENDORS.items():
             for pattern in patterns:
                 if pattern in text_lower:
                     return vendor_name
 
+        # Try email domain
         match = re.search(r'@([a-zA-Z0-9-]+)\.[a-z]{2,}', text)
         if match:
             return match.group(1).title()
 
+        # Try "from/von" patterns
         for pattern in [r'(?:von|from|verkauft von|sold by)[:\s]+([A-Z][a-zA-Z0-9\s&]+?)(?:\s*[,\n]|$)',
                         r'(?:Firma|Company)[:\s]+([A-Z][a-zA-Z0-9\s&]+?)(?:\s*[,\n]|$)']:
             match = re.search(pattern, text, re.I)
@@ -165,6 +184,25 @@ class BaseOCRProcessor:
                 words = vendor.split()[:3]
                 return " ".join(words)
         return None
+
+    def extract_vendor(self, text: str, img=None) -> Optional[str]:
+        """Extract vendor name - first from header, then footer, then full text"""
+        # If image provided, try header first, then footer
+        if img is not None:
+            # Try header (top 20%)
+            header_text = self._ocr_region(img, "header")
+            vendor = self._find_vendor_in_text(header_text)
+            if vendor:
+                return vendor
+
+            # Try footer (bottom 20%)
+            footer_text = self._ocr_region(img, "footer")
+            vendor = self._find_vendor_in_text(footer_text)
+            if vendor:
+                return vendor
+
+        # Fallback to full text
+        return self._find_vendor_in_text(text)
 
     def extract_invoice_number(self, text: str) -> Optional[str]:
         """Extract invoice number from text"""

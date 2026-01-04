@@ -130,8 +130,8 @@ class Parser(BaseOCRProcessor):
             text = self.run_ocr(img)
             conf = 0
 
-            # Extract vendor
-            r.vendor = self.extract_vendor(text)
+            # Extract vendor (header first, then footer, then full text)
+            r.vendor = self.extract_vendor(text, img)
             if r.vendor:
                 conf += ConfidenceScore.VENDOR
 
