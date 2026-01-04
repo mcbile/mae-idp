@@ -20,12 +20,10 @@ from dataclasses import dataclass, asdict
 from contextlib import asynccontextmanager
 from concurrent.futures import ThreadPoolExecutor
 
-# Logging setup
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Structured logging setup
+from logging_config import setup_logging, get_logger
+setup_logging()
+logger = get_logger("main")
 
 # Setup paths
 APP_DIR = Path(__file__).parent
@@ -44,6 +42,9 @@ setup_all()
 
 # Core OCR processing
 from core import BaseOCRProcessor, ConfidenceScore
+
+# OCR cache
+from cache import get_cache
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile, File, Request
@@ -107,11 +108,23 @@ class ParsedDoc:
 class Parser(BaseOCRProcessor):
     """Document parser using shared OCR processing logic"""
 
-    def parse(self, path: Path) -> ParsedDoc:
+    def __init__(self):
+        super().__init__()
+        self.cache = get_cache()
+
+    def parse(self, path: Path, use_cache: bool = True) -> ParsedDoc:
         r = ParsedDoc(filename=path.name, timestamp=datetime.now().isoformat())
         if not self.ocr_ok:
             r.status, r.error = "error", "OCR not available"
             return r
+
+        # Check cache first
+        if use_cache:
+            cached = self.cache.get(path)
+            if cached:
+                logger.debug("Cache hit for %s", path.name)
+                return ParsedDoc(**cached)
+
         try:
             # Load image using base class method
             img = self.load_image(path)
@@ -151,6 +164,11 @@ class Parser(BaseOCRProcessor):
 
             r.confidence = min(conf, 100)
             r.status = "success" if conf >= ConfidenceScore.THRESHOLD else "review"
+
+            # Save to cache
+            if use_cache:
+                self.cache.set(path, asdict(r))
+                logger.debug("Cached result for %s", path.name)
 
         except Exception as e:
             r.status, r.error = "error", str(e)
@@ -346,7 +364,8 @@ async def status():
     return {
         "ocr": parser.ocr_ok,
         "watcher": watcher.status,
-        "results_count": len(results)
+        "results_count": len(results),
+        "cache": parser.cache.stats()
     }
 
 

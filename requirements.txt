@@ -22,3 +22,6 @@ numpy==1.26.3
 
 # File Watching
 watchdog==3.0.0
+
+# Testing (dev)
+pytest==8.3.4

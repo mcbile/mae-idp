@@ -9,6 +9,11 @@
 
 ## [Unreleased]
 
+### Added
+- **Structured logging** — JSON/pretty формат логов (`logging_config.py`)
+- **OCR Cache** — кеширование результатов по SHA-256 hash файла (`cache.py`)
+- **pytest** — добавлен в requirements.txt
+
 ---
 
 ## [1.5.0] - 2026-01-04
