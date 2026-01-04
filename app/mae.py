@@ -71,7 +71,7 @@ class Config:
     APP_NAME = "MAE-IDP"
     VERSION = "1.4.0"
     HOST = "0.0.0.0"  # Allow access from local network
-    PORT = 8766
+    PORT = int(os.environ.get("PORT", 8766))  # Render sets PORT env var
     INPUT_DIR = DATA_DIR / "input"
     OUTPUT_DIR = DATA_DIR / "output"
     ARCHIVE_DIR = DATA_DIR / "archive"
