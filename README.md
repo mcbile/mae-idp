@@ -5,7 +5,7 @@
 
 ![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+%20%20|%20%20Linux-navy)
 ![PWA](https://img.shields.io/badge/PWA:-iOS%20%20|%20%20Android-blue)
-![Version](https://img.shields.io/badge/Spec:-Python%203.12+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
+![Version](https://img.shields.io/badge/Spec:-Python%203.12+%20%20|%20%20Tesseract%205.4.0+%20%20|%20%20Poppler-purple)
 
 ---
 
@@ -66,7 +66,7 @@ chmod +x install.sh run.sh
 
 ### Windows — Tesseract
 
-1. Скачай [tesseract-ocr-w64-setup-5.5.0.exe](https://github.com/UB-Mannheim/tesseract/releases)
+1. Скачай [tesseract-ocr-w64-setup-5.4.0.exe](https://github.com/UB-Mannheim/tesseract/releases)
 2. При установке выбери языки: **German**, **English**
 3. Установи в `C:\Program Files\Tesseract-OCR`
 
