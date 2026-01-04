@@ -1,7 +1,7 @@
 # MAE-IDP - Dependencies
 
-# GUI
-pywebview==4.4.1
+# GUI (optional, for desktop mode)
+# pywebview==4.4.1  # Uncomment for local desktop app
 
 # Web Server
 fastapi==0.109.0
