@@ -291,15 +291,20 @@ class BaseOCRProcessor:
         return self._find_vendor_in_text(text)
 
     def extract_invoice_number(self, text: str) -> Optional[str]:
-        """Extract invoice number from text"""
+        """Extract invoice number from text.
+
+        Requires explicit separator (colon, space, or dash) between keyword and number.
+        Minimum invoice number length: 5 characters.
+        """
+        # Patterns require separator [.:\s]+ (not optional) to avoid matching word fragments
         patterns = [
-            r'Rechnungsnummer[:\s]*([A-Z0-9-]+)',
-            r'Rechnungs[- ]?Nr[.:\s]*([A-Z0-9-]+)',
-            r'Rechnung[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)',
-            r'Invoice[- ]?(?:Nr|No|Number)[.:\s]*([A-Z0-9-]+)',
-            r'Beleg[- ]?(?:Nr|No|Nummer)[.:\s]*([A-Z0-9-]+)',
-            r'INV[- ]?(?:Nr|No|Number)?[.:\s]*([A-Z0-9-]+)',
-            r'RE[- ]?(?:Nr|No|Nummer)?[.:\s]*([A-Z0-9-]+)',
+            r'Rechnungsnummer[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Rechnungs[- ]?Nr[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Rechnung[- ]?(?:Nr|No|Nummer)[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Invoice[- ]?(?:Nr|No|Number)[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Beleg[- ]?(?:Nr|No|Nummer)[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Referenz(?:nummer)?[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
+            r'Bestell[- ]?(?:Nr|No|Nummer)[.:\s]+([A-Z0-9][A-Z0-9-]{4,})',
         ]
 
         for pattern in patterns:
@@ -317,17 +322,21 @@ class BaseOCRProcessor:
                     continue
 
                 inv_num = match.group(1).strip()
-                if len(inv_num) >= 5:
-                    return inv_num
+                # Already validated by regex {4,} + first char = minimum 5
+                return inv_num
         return None
 
     def extract_vat_id(self, text: str) -> Optional[str]:
-        """Extract VAT ID from text"""
+        """Extract VAT ID from text.
+
+        Supports German (USt-IdNr, Steuernummer), international (VAT, UID, TVA, etc.) formats.
+        """
         patterns = [
             r'USt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'USt[.-]?ID[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'Umsatzsteuer[- ]?(?:Id(?:entifikations)?(?:nummer)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'MwSt[.-]?(?:Id(?:Nr)?|Ident(?:Nr)?|Nr)[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
+            r'Steuernummer[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'VAT[.\s-]*(?:ID|No|Number|Reg)?[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'VAT[- ]?ID[.:\s]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
             r'(?:UID|TVA|IVA|BTW|NIF|CIF)[.:\s-]*([A-Z]{2,3}\s*[\dA-Z][\d\sA-Z./-]{6,})',
