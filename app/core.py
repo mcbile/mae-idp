@@ -13,7 +13,7 @@ class ConfidenceScore:
     INVOICE_NUMBER = 30
     INTERNAL_NUMBER = 30
     VAT_ID = 10  # optional
-    THRESHOLD = 50  # minimum for "success" status
+    THRESHOLD = 90  # minimum for "success" status
 
 
 # Исключения — это покупатели, не вендоры
