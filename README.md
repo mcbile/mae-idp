@@ -3,9 +3,9 @@
 ### Автоматическое распознавание счетов и документов с **OCR**.
 ### Извлекает: Vendor, Invoice No, Internal ID & VAT ID
 
-![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+-navy)
-![PWA](https://img.shields.io/badge/PWA:-iOS%20%20|%20%20Android-blue)
-![Version](https://img.shields.io/badge/Spec:-Python%203.12+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
+![Platform](https://img.shields.io/badge/OS:-%20Windows%2010+%20|%20macOS%2010.15+-navy)
+![PWA](https://img.shields.io/badge/PWA:-iOS%20|%20Android-blue)
+![Version](https://img.shields.io/badge/Spec:-Tesseract%20|%20Poppler%20|%20Python%203.12+-purple)
 
 ---
 
