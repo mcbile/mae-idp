@@ -13,6 +13,8 @@
 - **Structured logging** — JSON/pretty формат логов (`logging_config.py`)
 - **OCR Cache** — кеширование результатов по SHA-256 hash файла (`cache.py`)
 - **pytest** — добавлен в requirements.txt
+- **Skeleton loader** — анимация загрузки при обработке файлов (shimmer effect)
+- **Ручная коррекция** — inline editing для vendor, invoice, internal, VAT с автоматическим пересчётом confidence
 
 ### Changed
 - **Export форматы** — заменён Excel экспорт на CSV, Markdown, TXT с dropdown выбором

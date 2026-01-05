@@ -379,25 +379,93 @@
 
         .proc {
             display: none;
-            align-items: center;
-            gap: 16px;
+            flex-direction: column;
+            gap: 12px;
             padding: 18px 24px;
-            background: var(--bg-card-blue);
-            border: 2px solid var(--gradient-7);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             margin-bottom: 24px;
         }
         .proc.on { display: flex; }
+        .proc-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
         .spin {
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--border-color);
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
             border-top-color: var(--gradient-7);
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .proc-text { font-size: 14px; font-weight: 600; color: var(--gradient-7); }
+        .proc-text { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+        /* Skeleton loader */
+        .skeleton-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 100px 100px 60px;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .skeleton-row:last-child { border-bottom: none; }
+        .skeleton {
+            height: 16px;
+            background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-card) 50%, var(--bg-secondary) 75%);
+            background-size: 200% 100%;
+            border-radius: 4px;
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton.sm { width: 60%; }
+        .skeleton.md { width: 80%; }
+        .skeleton.lg { width: 100%; }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Editable cells */
+        .editable {
+            cursor: pointer;
+            padding: 4px 8px;
+            margin: -4px -8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            min-height: 20px;
+        }
+        .editable:hover {
+            background: var(--bg-secondary);
+        }
+        .editable.editing {
+            background: var(--bg-primary);
+            padding: 0;
+            margin: -4px -8px;
+        }
+        .editable input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid var(--gradient-7);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            outline: none;
+        }
+        .editable input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .editable-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
 
         .stats-grid {
             display: grid;
@@ -955,8 +1023,20 @@
             </div>
 
             <div class="proc" id="proc">
-                <div class="spin"></div>
-                <span class="proc-text" id="procTxt">Processing documents...</span>
+                <div class="proc-header">
+                    <div class="spin"></div>
+                    <span class="proc-text" id="procTxt">Processing documents...</span>
+                </div>
+                <div class="skeleton-rows" id="skeletonRows">
+                    <div class="skeleton-row">
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton md"></div>
+                        <div class="skeleton lg"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="stats-grid" id="stats" style="display: none;">
@@ -1387,14 +1467,32 @@
         dz.addEventListener('drop', e => handle(e.dataTransfer.files));
         fi.addEventListener('change', () => handle(fi.files));
 
+        function generateSkeletonRows(count) {
+            const container = document.getElementById('skeletonRows');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `
+                    <div class="skeleton-row">
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton md"></div>
+                        <div class="skeleton lg"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                    </div>`;
+            }
+        }
+
         async function handle(files) {
             if (!files.length) return;
             const pr = document.getElementById('proc');
             const tx = document.getElementById('procTxt');
+
+            generateSkeletonRows(files.length);
             pr.classList.add('on');
 
             for (let i = 0; i < files.length; i++) {
-                tx.textContent = 'Processing ' + (i + 1) + '/' + files.length + ' documents...';
+                tx.textContent = 'Processing ' + (i + 1) + '/' + files.length + '...';
                 const fd = new FormData();
                 fd.append('file', files[i]);
                 try {
@@ -1439,18 +1537,19 @@
             document.getElementById('sConf').textContent = avg + '%';
             document.getElementById('allCnt').textContent = t;
 
-            const html = getSortedResults().map(r => {
+            const html = getSortedResults().map((r, idx) => {
                 const sc = r.status === 'success' ? 'ok' : r.status === 'review' ? 'warn' : 'err';
                 const cc = r.confidence >= 80 ? 'linear-gradient(90deg, #2BAAD3, #00C853)' :
                            r.confidence >= 50 ? 'linear-gradient(90deg, #F8AF08, #F65006)' :
                            'linear-gradient(90deg, #F54342, #F4396E)';
                 const conf = parseInt(r.confidence) || 0;
+                const origIdx = results.indexOf(r);
                 return `<tr>
                     <td><span class="st st-${sc}">${escapeHtml(r.status)}</span></td>
-                    <td>${escapeHtml(r.vendor)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.invoice_number)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.internal_number)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 11px">${escapeHtml(r.vat_id)}</td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'vendor')">${escapeHtml(r.vendor) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'invoice_number')" style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.invoice_number) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'internal_number')" style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.internal_number) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'vat_id')" style="font-family: JetBrains Mono; font-size: 11px">${escapeHtml(r.vat_id) || '<em style="opacity:0.5">click to add</em>'}</span></td>
                     <td>
                         <div class="conf">
                             <div class="conf-bar"><div class="conf-fill" style="width: ${conf}%; background: ${cc}"></div></div>
@@ -1523,6 +1622,70 @@
             await fetch('/api/results', { method: 'DELETE' });
             results = [];
             updateUI();
+        }
+
+        // Editable cells functionality
+        const CONFIDENCE_WEIGHTS = { vendor: 30, invoice_number: 30, internal_number: 30, vat_id: 10 };
+
+        function startEdit(cell, index, field) {
+            if (cell.classList.contains('editing')) return;
+
+            const currentValue = results[index][field] || '';
+            const originalHtml = cell.innerHTML;
+
+            cell.classList.add('editing');
+            cell.innerHTML = `<input type="text" value="${escapeHtml(currentValue)}" data-original="${escapeHtml(currentValue)}">`;
+
+            const input = cell.querySelector('input');
+            input.focus();
+            input.select();
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    saveEdit(cell, index, field, input.value);
+                } else if (e.key === 'Escape') {
+                    cancelEdit(cell, originalHtml);
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (cell.classList.contains('editing')) {
+                        saveEdit(cell, index, field, input.value);
+                    }
+                }, 100);
+            });
+        }
+
+        function saveEdit(cell, index, field, newValue) {
+            cell.classList.remove('editing');
+            const trimmedValue = newValue.trim();
+
+            // Update results
+            results[index][field] = trimmedValue || null;
+
+            // Recalculate confidence
+            results[index].confidence = recalculateConfidence(results[index]);
+
+            // Update status based on new confidence
+            results[index].status = results[index].confidence >= 90 ? 'success' : 'review';
+
+            // Re-render UI
+            updateUI();
+        }
+
+        function cancelEdit(cell, originalHtml) {
+            cell.classList.remove('editing');
+            cell.innerHTML = originalHtml;
+        }
+
+        function recalculateConfidence(result) {
+            let conf = 0;
+            if (result.vendor) conf += CONFIDENCE_WEIGHTS.vendor;
+            if (result.invoice_number) conf += CONFIDENCE_WEIGHTS.invoice_number;
+            if (result.internal_number) conf += CONFIDENCE_WEIGHTS.internal_number;
+            if (result.vat_id) conf += CONFIDENCE_WEIGHTS.vat_id;
+            return conf;
         }
     </script>
 </body>
