@@ -379,25 +379,55 @@
 
         .proc {
             display: none;
-            align-items: center;
-            gap: 16px;
+            flex-direction: column;
+            gap: 12px;
             padding: 18px 24px;
-            background: var(--bg-card-blue);
-            border: 2px solid var(--gradient-7);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             margin-bottom: 24px;
         }
         .proc.on { display: flex; }
+        .proc-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
         .spin {
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--border-color);
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
             border-top-color: var(--gradient-7);
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .proc-text { font-size: 14px; font-weight: 600; color: var(--gradient-7); }
+        .proc-text { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+        /* Skeleton loader */
+        .skeleton-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 100px 100px 60px;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .skeleton-row:last-child { border-bottom: none; }
+        .skeleton {
+            height: 16px;
+            background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-card) 50%, var(--bg-secondary) 75%);
+            background-size: 200% 100%;
+            border-radius: 4px;
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton.sm { width: 60%; }
+        .skeleton.md { width: 80%; }
+        .skeleton.lg { width: 100%; }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
 
         .stats-grid {
             display: grid;
@@ -955,8 +985,20 @@
             </div>
 
             <div class="proc" id="proc">
-                <div class="spin"></div>
-                <span class="proc-text" id="procTxt">Processing documents...</span>
+                <div class="proc-header">
+                    <div class="spin"></div>
+                    <span class="proc-text" id="procTxt">Processing documents...</span>
+                </div>
+                <div class="skeleton-rows" id="skeletonRows">
+                    <div class="skeleton-row">
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton md"></div>
+                        <div class="skeleton lg"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="stats-grid" id="stats" style="display: none;">
@@ -1387,14 +1429,32 @@
         dz.addEventListener('drop', e => handle(e.dataTransfer.files));
         fi.addEventListener('change', () => handle(fi.files));
 
+        function generateSkeletonRows(count) {
+            const container = document.getElementById('skeletonRows');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `
+                    <div class="skeleton-row">
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton md"></div>
+                        <div class="skeleton lg"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                        <div class="skeleton sm"></div>
+                    </div>`;
+            }
+        }
+
         async function handle(files) {
             if (!files.length) return;
             const pr = document.getElementById('proc');
             const tx = document.getElementById('procTxt');
+
+            generateSkeletonRows(files.length);
             pr.classList.add('on');
 
             for (let i = 0; i < files.length; i++) {
-                tx.textContent = 'Processing ' + (i + 1) + '/' + files.length + ' documents...';
+                tx.textContent = 'Processing ' + (i + 1) + '/' + files.length + '...';
                 const fd = new FormData();
                 fd.append('file', files[i]);
                 try {
