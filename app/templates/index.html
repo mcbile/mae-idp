@@ -429,6 +429,44 @@
             100% { background-position: -200% 0; }
         }
 
+        /* Editable cells */
+        .editable {
+            cursor: pointer;
+            padding: 4px 8px;
+            margin: -4px -8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            min-height: 20px;
+        }
+        .editable:hover {
+            background: var(--bg-secondary);
+        }
+        .editable.editing {
+            background: var(--bg-primary);
+            padding: 0;
+            margin: -4px -8px;
+        }
+        .editable input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid var(--gradient-7);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            outline: none;
+        }
+        .editable input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .editable-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1499,18 +1537,19 @@
             document.getElementById('sConf').textContent = avg + '%';
             document.getElementById('allCnt').textContent = t;
 
-            const html = getSortedResults().map(r => {
+            const html = getSortedResults().map((r, idx) => {
                 const sc = r.status === 'success' ? 'ok' : r.status === 'review' ? 'warn' : 'err';
                 const cc = r.confidence >= 80 ? 'linear-gradient(90deg, #2BAAD3, #00C853)' :
                            r.confidence >= 50 ? 'linear-gradient(90deg, #F8AF08, #F65006)' :
                            'linear-gradient(90deg, #F54342, #F4396E)';
                 const conf = parseInt(r.confidence) || 0;
+                const origIdx = results.indexOf(r);
                 return `<tr>
                     <td><span class="st st-${sc}">${escapeHtml(r.status)}</span></td>
-                    <td>${escapeHtml(r.vendor)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.invoice_number)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.internal_number)}</td>
-                    <td style="font-family: JetBrains Mono; font-size: 11px">${escapeHtml(r.vat_id)}</td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'vendor')">${escapeHtml(r.vendor) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'invoice_number')" style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.invoice_number) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'internal_number')" style="font-family: JetBrains Mono; font-size: 12px; font-weight: 600">${escapeHtml(r.internal_number) || '<em style="opacity:0.5">click to add</em>'}</span></td>
+                    <td><span class="editable" onclick="startEdit(this, ${origIdx}, 'vat_id')" style="font-family: JetBrains Mono; font-size: 11px">${escapeHtml(r.vat_id) || '<em style="opacity:0.5">click to add</em>'}</span></td>
                     <td>
                         <div class="conf">
                             <div class="conf-bar"><div class="conf-fill" style="width: ${conf}%; background: ${cc}"></div></div>
@@ -1583,6 +1622,70 @@
             await fetch('/api/results', { method: 'DELETE' });
             results = [];
             updateUI();
+        }
+
+        // Editable cells functionality
+        const CONFIDENCE_WEIGHTS = { vendor: 30, invoice_number: 30, internal_number: 30, vat_id: 10 };
+
+        function startEdit(cell, index, field) {
+            if (cell.classList.contains('editing')) return;
+
+            const currentValue = results[index][field] || '';
+            const originalHtml = cell.innerHTML;
+
+            cell.classList.add('editing');
+            cell.innerHTML = `<input type="text" value="${escapeHtml(currentValue)}" data-original="${escapeHtml(currentValue)}">`;
+
+            const input = cell.querySelector('input');
+            input.focus();
+            input.select();
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    saveEdit(cell, index, field, input.value);
+                } else if (e.key === 'Escape') {
+                    cancelEdit(cell, originalHtml);
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (cell.classList.contains('editing')) {
+                        saveEdit(cell, index, field, input.value);
+                    }
+                }, 100);
+            });
+        }
+
+        function saveEdit(cell, index, field, newValue) {
+            cell.classList.remove('editing');
+            const trimmedValue = newValue.trim();
+
+            // Update results
+            results[index][field] = trimmedValue || null;
+
+            // Recalculate confidence
+            results[index].confidence = recalculateConfidence(results[index]);
+
+            // Update status based on new confidence
+            results[index].status = results[index].confidence >= 90 ? 'success' : 'review';
+
+            // Re-render UI
+            updateUI();
+        }
+
+        function cancelEdit(cell, originalHtml) {
+            cell.classList.remove('editing');
+            cell.innerHTML = originalHtml;
+        }
+
+        function recalculateConfidence(result) {
+            let conf = 0;
+            if (result.vendor) conf += CONFIDENCE_WEIGHTS.vendor;
+            if (result.invoice_number) conf += CONFIDENCE_WEIGHTS.invoice_number;
+            if (result.internal_number) conf += CONFIDENCE_WEIGHTS.internal_number;
+            if (result.vat_id) conf += CONFIDENCE_WEIGHTS.vat_id;
+            return conf;
         }
     </script>
 </body>
