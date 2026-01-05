@@ -90,7 +90,7 @@
             gap: 12px;
         }
         .header-left { display: flex; align-items: center; gap: 16px; }
-        .logo-container { display: flex; align-items: center; gap: 4px; }
+        .logo-container { display: flex; align-items: center; gap: 4px; cursor: pointer; }
         .logo-m {
             display: inline-flex;
             align-items: center;
@@ -307,6 +307,74 @@
             font-family: 'JetBrains Mono';
             color: white;
             font-weight: 600;
+        }
+
+        .ocr-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            position: relative;
+            cursor: help;
+        }
+        .ocr-status.ok { border-color: #22c55e; background: var(--bg-card-green); }
+        .ocr-status.err { border-color: #ef4444; background: var(--bg-card); }
+        .ocr-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+        .ocr-status.ok .ocr-dot { background: #22c55e; }
+        .ocr-status.err .ocr-dot { background: #ef4444; }
+        .ocr-tooltip {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 280px;
+            padding: 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 100;
+            text-align: left;
+            cursor: default;
+        }
+        .ocr-status:hover .ocr-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        .ocr-tooltip strong {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .ocr-tooltip p {
+            margin: 0 0 8px 0;
+            line-height: 1.5;
+        }
+        .ocr-tooltip ul {
+            margin: 0;
+            padding-left: 16px;
+            line-height: 1.6;
+        }
+        .ocr-tooltip li {
+            margin-bottom: 2px;
         }
 
         .proc {
@@ -829,13 +897,13 @@
     <header class="header">
         <div class="header-content">
             <div class="header-left">
-                <div class="logo-container">
+                <a href="/" class="logo-container" style="text-decoration: none;">
                     <span class="logo-m">M</span>
                     <div class="logo-text">
                         <span class="logo-cbile">cBile</span>
                         <span class="logo-product">AI-Engine</span>
                     </div>
-                </div>
+                </a>
                 <div class="header-divider"></div>
                 <div class="header-info">
                     <div class="header-title">Intelligent Document Processing</div>
@@ -843,30 +911,6 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="status-pills">
-                    <div class="pill ocr" id="ocrPill">
-                        <span class="dot"></span><span>OCR</span>
-                        <div class="pill-tooltip">
-                            <strong>Tesseract OCR Engine</strong>
-                            <span>Система оптического распознавания текста для извлечения данных из документов.</span>
-                            <div class="status-line">
-                                <span class="status-dot" id="ocrStatusDot"></span>
-                                <span id="ocrStatusText">Проверка...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pill docs" id="watchPill">
-                        <span class="dot"></span><span>Doc's</span>
-                        <div class="pill-tooltip">
-                            <strong>Document Watcher</strong>
-                            <span>Мониторинг папки для автоматической обработки новых документов.</span>
-                            <div class="status-line">
-                                <span class="status-dot" id="docsStatusDot"></span>
-                                <span id="docsStatusText">Не активен</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <button class="toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
                     <span class="icon-sun">☀️</span>
                     <span class="icon-moon">🌙</span>
@@ -883,6 +927,20 @@
         </div>
 
         <div class="panel on" id="p-upload">
+            <div class="ocr-status" id="ocrStatus">
+                <span class="ocr-dot" id="ocrDot"></span>
+                <span id="ocrLabel">OCR: Checking...</span>
+                <div class="ocr-tooltip">
+                    <strong>Tesseract OCR Engine</strong>
+                    <p>Optical Character Recognition system for extracting text data from scanned documents and images.</p>
+                    <ul>
+                        <li>Supports PDF, JPG, PNG, TIFF</li>
+                        <li>Languages: German + English</li>
+                        <li>Extracts: Vendor, Invoice #, VAT ID</li>
+                        <li>QR/Barcode recognition included</li>
+                    </ul>
+                </div>
+            </div>
             <div class="drop" id="dropZone">
                 <div class="drop-icon">📄</div>
                 <h3>Drop files here</h3>
@@ -940,6 +998,20 @@
         </div>
 
         <div class="panel" id="p-watch">
+            <div class="ocr-status" id="docsStatus">
+                <span class="ocr-dot" id="docsDot"></span>
+                <span id="docsLabel">Watcher: Inactive</span>
+                <div class="ocr-tooltip">
+                    <strong>Document Watcher</strong>
+                    <p>Automatic folder monitoring service that watches for new documents and processes them instantly.</p>
+                    <ul>
+                        <li>Auto-detects new files in folder</li>
+                        <li>Processes PDF, JPG, PNG, TIFF</li>
+                        <li>Archives processed documents</li>
+                        <li>Google Drive integration</li>
+                    </ul>
+                </div>
+            </div>
             <div class="gdrive-hint" id="gdriveHint" style="display: none;">
                 <h4>💡 Google Drive Detected</h4>
                 <p>Click a path to use as watch folder:</p>
@@ -1026,13 +1098,13 @@
             </div>
             <div class="modal-body">
                 <div class="modal-section">
-                    <h3>📋 Требования</h3>
+                    <h3>📋 Requirements</h3>
                     <p style="font-size: 13px; color: var(--text-muted);">
                         Windows 10/11 • Python 3.10+ • Tesseract OCR • Poppler
                     </p>
                 </div>
                 <div class="modal-section">
-                    <h3>📥 Шаг 1: Скачайте зависимости</h3>
+                    <h3>📥 Step 1: Download dependencies</h3>
                     <div class="arch-selector" style="display: flex; gap: 8px; margin-bottom: 12px;">
                         <button class="arch-btn on" id="arch64" onclick="setArch(64)">64-bit</button>
                         <button class="arch-btn" id="arch32" onclick="setArch(32)">32-bit</button>
@@ -1061,18 +1133,18 @@
                     </div>
                 </div>
                 <div class="modal-section">
-                    <h3>🔧 Шаг 2: Установка</h3>
+                    <h3>🔧 Step 2: Installation</h3>
                     <div style="font-size: 13px; line-height: 1.8;">
-                        <p><strong>Python:</strong> Запустите установщик, отметьте "Add to PATH"</p>
-                        <p><strong>Tesseract:</strong> При установке выберите языки: <em>German, English</em></p>
-                        <p><strong>Poppler:</strong> Распакуйте ZIP в папку проекта <code style="background: var(--bg-card); padding: 2px 6px; border-radius: 4px;">./poppler/</code></p>
+                        <p><strong>Python:</strong> Run installer, check "Add to PATH"</p>
+                        <p><strong>Tesseract:</strong> Select languages during install: <em>German, English</em></p>
+                        <p><strong>Poppler:</strong> Extract ZIP to project folder <code style="background: var(--bg-card); padding: 2px 6px; border-radius: 4px;">./poppler/</code></p>
                     </div>
                 </div>
                 <div class="modal-section">
-                    <h3>▶️ Шаг 3: Запуск</h3>
+                    <h3>▶️ Step 3: Run</h3>
                     <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-                        <div>install.bat    <span style="color: var(--text-muted);"># первый запуск</span></div>
-                        <div>run.bat        <span style="color: var(--text-muted);"># запуск приложения</span></div>
+                        <div>install.bat    <span style="color: var(--text-muted);"># first run</span></div>
+                        <div>run.bat        <span style="color: var(--text-muted);"># start app</span></div>
                     </div>
                 </div>
             </div>
@@ -1088,33 +1160,33 @@
             </div>
             <div class="modal-body">
                 <div class="modal-section">
-                    <h3>📋 Требования</h3>
+                    <h3>📋 Requirements</h3>
                     <p style="font-size: 13px; color: var(--text-muted);">
-                        macOS 10.15+ (Catalina или новее) • Homebrew
+                        macOS 10.15+ (Catalina or newer) • Homebrew
                     </p>
                 </div>
                 <div class="modal-section">
-                    <h3>🍺 Шаг 1: Установка Homebrew</h3>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Если Homebrew ещё не установлен:</p>
+                    <h3>🍺 Step 1: Install Homebrew</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">If Homebrew is not installed:</p>
                     <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
                         <div>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</div>
                     </div>
                 </div>
                 <div class="modal-section">
-                    <h3>📦 Шаг 2: Установка зависимостей</h3>
+                    <h3>📦 Step 2: Install dependencies</h3>
                     <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
                         <div>brew install python@3.12 tesseract tesseract-lang poppler</div>
                     </div>
                     <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
-                        Автоматически установятся Python, Tesseract с немецким и английским языками, и Poppler.
+                        This will install Python, Tesseract with German and English languages, and Poppler.
                     </p>
                 </div>
                 <div class="modal-section">
-                    <h3>▶️ Шаг 3: Запуск</h3>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">В Terminal.app, в папке проекта:</p>
+                    <h3>▶️ Step 3: Run</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">In Terminal.app, in project folder:</p>
                     <div style="background: var(--bg-card); padding: 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-                        <div>./install.sh   <span style="color: var(--text-muted);"># первый запуск</span></div>
-                        <div>./run.sh       <span style="color: var(--text-muted);"># запуск приложения</span></div>
+                        <div>./install.sh   <span style="color: var(--text-muted);"># first run</span></div>
+                        <div>./run.sh       <span style="color: var(--text-muted);"># start app</span></div>
                     </div>
                 </div>
             </div>
@@ -1240,15 +1312,15 @@
 
                 // OCR status
                 const ocrOk = d.ocr;
-                document.getElementById('ocrPill').className = 'pill ocr ' + (ocrOk ? 'ok' : 'err');
-                document.getElementById('ocrStatusDot').className = 'status-dot ' + (ocrOk ? 'ok' : 'err');
-                document.getElementById('ocrStatusText').textContent = ocrOk ? 'Подключен' : 'Не найден';
+                // OCR status in upload section
+                document.getElementById('ocrStatus').className = 'ocr-status ' + (ocrOk ? 'ok' : 'err');
+                document.getElementById('ocrLabel').textContent = ocrOk ? 'OCR: Connected' : 'OCR: Not found';
 
                 // Watcher status
                 const w = d.watcher;
-                document.getElementById('watchPill').className = 'pill docs ' + (w.running ? 'ok' : 'err');
-                document.getElementById('docsStatusDot').className = 'status-dot ' + (w.running ? 'ok' : 'err');
-                document.getElementById('docsStatusText').textContent = w.running ? 'Активен: ' + w.watch_path : 'Не активен';
+                // Watcher status in Folder Watch section
+                document.getElementById('docsStatus').className = 'ocr-status ' + (w.running ? 'ok' : 'err');
+                document.getElementById('docsLabel').textContent = w.running ? 'Watcher: Active' : 'Watcher: Inactive';
 
                 if (w.running) {
                     document.getElementById('watchOff').style.display = 'none';
