@@ -3,7 +3,7 @@
 ### Автоматическое распознавание счетов и документов с **OCR**.
 ### Извлекает: Vendor, Invoice No, Internal ID & VAT ID
 
-![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+%20%20|%20%20Linux-navy)
+![Platform](https://img.shields.io/badge/OS:-%20%20Windows%2010+%20%20|%20%20macOS%2010.15+-navy)
 ![PWA](https://img.shields.io/badge/PWA:-iOS%20%20|%20%20Android-blue)
 ![Version](https://img.shields.io/badge/Spec:-Python%203.12+%20%20|%20%20Tesseract%205.5.0+%20%20|%20%20Poppler-purple)
 
@@ -27,7 +27,7 @@
 4. **Запусти** `run.bat`
 5. **Открой** http://127.0.0.1:8766
 
-### macOS / Linux
+### macOS
 
 1. **Скачай** → [Download ZIP](https://github.com/mcbile/mae-idp/archive/refs/heads/main.zip)
 2. **Распакуй** в любую папку
@@ -56,10 +56,6 @@ chmod +x install.sh run.sh
 - **Homebrew** — [установка](https://brew.sh)
 - **Tesseract & Poppler** — устанавливаются автоматически через `install.sh`
 
-### Linux (Ubuntu/Debian/Fedora/Arch)
-- **Python 3.12+**
-- **Tesseract & Poppler** — устанавливаются автоматически через `install.sh`
-
 ---
 
 ## 🔧 Установка зависимостей
@@ -74,19 +70,6 @@ chmod +x install.sh run.sh
 
 ```bash
 brew install tesseract tesseract-lang
-```
-
-### Linux — Tesseract
-
-```bash
-# Ubuntu/Debian
-sudo apt install tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng poppler-utils
-
-# Fedora
-sudo dnf install tesseract tesseract-langpack-deu tesseract-langpack-eng poppler-utils
-
-# Arch
-sudo pacman -S tesseract tesseract-data-deu tesseract-data-eng poppler
 ```
 
 ---
@@ -104,7 +87,7 @@ run.bat
 venv\Scripts\python app\mae.py
 ```
 
-### macOS / Linux
+### macOS
 
 ```bash
 ./run.sh
@@ -133,7 +116,7 @@ MAE IDP работает как Progressive Web App (PWA). Вы можете и�
 ### Шаг 2: Узнайте IP-адрес компьютера
 
 ```bash
-# macOS/Linux
+# macOS
 ifconfig | grep "inet "
 
 # Windows
@@ -165,7 +148,7 @@ ipconfig
 - **📄 Drag & Drop** — перетащи файлы в окно
 - **👁️ Folder Watch** — автоматический мониторинг папки
 - **☁️ Cloud Support** — Google Drive Desktop, OneDrive, Dropbox
-- **📊 Excel Export** — выгрузка результатов
+- **📊 Export** — выгрузка в CSV, Markdown, TXT
 - **🌓 Dark/Light Theme** — переключение темы
 
 ### Поддерживаемые форматы
@@ -180,16 +163,16 @@ ipconfig
 
 | Поле | Описание | Confidence |
 |------|----------|------------|
-| **Vendor** | Название вендора (45+ известных компаний) | +30 |
+| **Vendor** | Автоматически распознаёт 20+ поставщиков (Amazon, DHL, IKEA и др.) | +30 |
 | **Invoice Number** | Номер счёта/накладной | +30 |
 | **Internal Number** | Внутренний входящий номер (из QR или угла) | +30 |
-| **VAT ID** | Идентификатор НДС (DE, AT, CH) | +10 |
+| **VAT ID** | Идентификатор НДС (28 стран EU) | +10 |
 
-**Порог успеха:** 50+ баллов = `success`, иначе `review`
+**Порог успеха:** ≥90 баллов = `success`, иначе `review`
 
-### Известные вендоры
+### Известные поставщики
 
-Amazon, DHL, UPS, FedEx, Deutsche Telekom, Vodafone, O2, IKEA, MediaMarkt, Saturn, Conrad, Reichelt, RS Components, Mouser, DigiKey, Farnell, Würth, Hoffmann, Grainger, Mercateo, Staples, Office Depot, Viking, Büroshop24 и другие.
+Amazon, DHL, UPS, FedEx, Deutsche Telekom, Vodafone, O2, IKEA, MediaMarkt, Saturn, Conrad, Reichelt, RS Components, Mouser, DigiKey, Farnell, Würth, Hoffmann, Grainger, Mercateo, Staples, Office Depot, Viking, Büroshop24.
 
 ---
 
@@ -201,15 +184,11 @@ Amazon, DHL, UPS, FedEx, Deutsche Telekom, Vodafone, O2, IKEA, MediaMarkt, Satur
 
 **macOS:** Запусти `brew install tesseract tesseract-lang`
 
-**Linux:** Запусти `sudo apt install tesseract-ocr`
-
 ### "PDF conversion failed"
 
 **Windows:** Poppler не установлен. Запусти `install.bat` заново.
 
 **macOS:** Запусти `brew install poppler`
-
-**Linux:** Запусти `sudo apt install poppler-utils`
 
 ### Окно сразу закрывается (Windows)
 
