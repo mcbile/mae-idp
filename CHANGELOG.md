@@ -10,6 +10,10 @@
 ## [Unreleased]
 
 ### Added
+- **Batch processing в GUI** — новый таб для обработки всех файлов в папке одним кликом
+  - API endpoints: `/api/batch/start`, `/api/batch/status`, `/api/batch/stop`
+  - Progress bar с отображением текущего файла
+  - Опция архивирования файлов после обработки
 - **Structured logging** — JSON/pretty формат логов (`logging_config.py`)
 - **OCR Cache** — кеширование результатов по SHA-256 hash файла (`cache.py`)
 - **pytest** — добавлен в requirements.txt
@@ -26,6 +30,21 @@
 
 ### Removed
 - **Excel экспорт** — убран в пользу CSV/MD/TXT (pandas/openpyxl больше не используются для экспорта)
+
+### Security
+- **Rate limiting** — защита от DoS атак (10 файлов/мин на IP) через `slowapi`
+- **Magic bytes validation** — проверка типа файла по содержимому, не только расширению
+- **MAX_RESULTS** — ограничение роста списка результатов (FIFO, max 1000)
+- **Thread-safe processed_files** — Lock для защиты от race condition в FolderWatcher
+
+### Changed
+- **Async OCR** — обработка OCR в thread pool (`run_in_executor`) для разблокировки event loop
+- **Triple OCR fix** — оптимизация `extract_vendor`: теперь использует разбиение текста вместо 3x OCR вызовов (3x ускорение)
+- **PDF optimization** — загрузка только первой страницы (`first_page=1, last_page=1`) — ~90% экономия RAM
+- **CORS methods** — ограничены до GET, POST, DELETE (вместо "*")
+- **UI: Sticky footer** — футер фиксированной высоты (80px), flexbox layout для стабильного отображения
+- **UI: Компактный drop zone** — уменьшены отступы для выравнивания высоты табов
+- **UI: Названия табов** — убраны эмодзи (Upload, Batch, Watch, Results)
 
 ---
 

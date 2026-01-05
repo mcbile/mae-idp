@@ -70,6 +70,8 @@
             -webkit-font-smoothing: antialiased;
             transition: background 0.3s, color 0.3s;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -236,7 +238,7 @@
         [data-theme="dark"] .toggle-btn .icon-sun { display: none; }
         [data-theme="dark"] .toggle-btn .icon-moon { display: block; }
 
-        main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        main { max-width: 1200px; margin: 0 auto; padding: 24px; width: 100%; flex: 1; }
 
         .tabs {
             display: flex;
@@ -278,10 +280,10 @@
             background: var(--bg-secondary);
             border: 2px dashed var(--border-color);
             border-radius: 20px;
-            padding: 56px 32px;
+            padding: 32px 24px;
             text-align: center;
             cursor: pointer;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             transition: all 0.3s;
         }
         .drop:hover {
@@ -740,6 +742,9 @@
             border-top: 1px solid var(--border-color);
             color: var(--text-muted);
             padding: 24px 32px;
+            height: 80px;
+            flex-shrink: 0;
+            box-sizing: border-box;
         }
         .footer-content {
             max-width: 1200px;
@@ -989,9 +994,10 @@
 
     <main>
         <div class="tabs">
-            <button class="tab on" onclick="showTab('upload', this)">📄 Upload</button>
-            <button class="tab" onclick="showTab('watch', this)">👁️ Folder Watch</button>
-            <button class="tab" onclick="showTab('results', this)">📊 Results</button>
+            <button class="tab on" onclick="showTab('upload', this)">Upload</button>
+            <button class="tab" onclick="showTab('batch', this)">Batch</button>
+            <button class="tab" onclick="showTab('watch', this)">Watch</button>
+            <button class="tab" onclick="showTab('results', this)">Results</button>
         </div>
 
         <div class="panel on" id="p-upload">
@@ -1073,6 +1079,65 @@
                         </tr></thead>
                         <tbody id="resTbody"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="p-batch">
+            <div class="section">
+                <h3>📁 Batch Processing</h3>
+                <p class="desc">Select a folder to process all documents at once. Files will be archived after processing.</p>
+
+                <div id="batchOff">
+                    <div class="input-group">
+                        <label>Folder with Documents</label>
+                        <div class="input-row">
+                            <input type="text" id="batchPath" placeholder="C:\Documents\Invoices or ~/Documents/Invoices">
+                            <button class="btn" onclick="browsePath('batchPath')">📁 Browse</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);">
+                            <input type="checkbox" id="batchArchive" checked style="width: 16px; height: 16px;">
+                            Archive files after processing
+                        </label>
+                    </div>
+                    <button class="btn btn-p" onclick="startBatch()">▶️ Start Batch Processing</button>
+                </div>
+
+                <div id="batchOn" style="display: none;">
+                    <div class="watch-status" style="background: var(--bg-card-blue); border-color: var(--gradient-7);">
+                        <div class="watch-info">
+                            <div class="watch-icon" style="background: linear-gradient(135deg, var(--gradient-7), var(--gradient-8));">⚡</div>
+                            <div class="watch-details">
+                                <p id="batchStatusText">Processing...</p>
+                                <small id="batchCurrentFile">—</small>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="text-align: right;">
+                                <div style="font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono'; color: var(--text-primary);" id="batchProgressNum">0%</div>
+                                <div style="font-size: 11px; color: var(--text-muted);" id="batchProgressCount">0 / 0</div>
+                            </div>
+                            <button class="btn btn-danger" onclick="stopBatch()">⏹️ Stop</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px; background: var(--bg-secondary); border-radius: 8px; height: 8px; overflow: hidden;">
+                        <div id="batchProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--gradient-7), var(--gradient-8)); transition: width 0.3s;"></div>
+                    </div>
+                </div>
+
+                <div id="batchDone" style="display: none; margin-top: 24px;">
+                    <div class="watch-status" style="background: var(--bg-card-green); border-color: #22c55e;">
+                        <div class="watch-info">
+                            <div class="watch-icon" style="background: linear-gradient(135deg, #22c55e, #00C853);">✓</div>
+                            <div class="watch-details">
+                                <p style="color: #22c55e;">Batch Complete!</p>
+                                <small id="batchDoneCount">0 files processed</small>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="resetBatch()">🔄 New Batch</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1622,6 +1687,80 @@
             await fetch('/api/results', { method: 'DELETE' });
             results = [];
             updateUI();
+        }
+
+        // Batch processing
+        let batchInterval = null;
+
+        async function startBatch() {
+            const bp = document.getElementById('batchPath').value.trim();
+            if (!bp) return alert('Please select a folder first');
+
+            const archive = document.getElementById('batchArchive').checked;
+
+            try {
+                const r = await fetch('/api/batch/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_path: bp, archive: archive })
+                });
+                const d = await r.json();
+
+                if (r.ok && d.success) {
+                    document.getElementById('batchOff').style.display = 'none';
+                    document.getElementById('batchOn').style.display = 'block';
+                    document.getElementById('batchDone').style.display = 'none';
+                    batchInterval = setInterval(checkBatchStatus, 1000);
+                } else {
+                    alert(d.detail || 'Failed to start batch processing');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function checkBatchStatus() {
+            try {
+                const r = await fetch('/api/batch/status');
+                const d = await r.json();
+
+                document.getElementById('batchProgressNum').textContent = d.progress + '%';
+                document.getElementById('batchProgressCount').textContent = d.processed + ' / ' + d.total;
+                document.getElementById('batchProgressBar').style.width = d.progress + '%';
+                document.getElementById('batchCurrentFile').textContent = d.current_file || '—';
+                document.getElementById('batchStatusText').textContent = d.running ? 'Processing...' : 'Finishing...';
+
+                if (!d.running && d.processed > 0) {
+                    clearInterval(batchInterval);
+                    batchInterval = null;
+
+                    document.getElementById('batchOn').style.display = 'none';
+                    document.getElementById('batchDone').style.display = 'block';
+                    document.getElementById('batchDoneCount').textContent = d.processed + ' files processed';
+
+                    // Refresh results
+                    loadResults();
+                }
+            } catch (e) {
+                console.error('Batch status check failed:', e);
+            }
+        }
+
+        async function stopBatch() {
+            await fetch('/api/batch/stop', { method: 'POST' });
+            if (batchInterval) {
+                clearInterval(batchInterval);
+                batchInterval = null;
+            }
+            // Give time for current file to finish
+            setTimeout(checkBatchStatus, 500);
+        }
+
+        function resetBatch() {
+            document.getElementById('batchOff').style.display = 'block';
+            document.getElementById('batchOn').style.display = 'none';
+            document.getElementById('batchDone').style.display = 'none';
+            document.getElementById('batchProgressBar').style.width = '0%';
         }
 
         // Editable cells functionality

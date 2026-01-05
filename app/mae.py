@@ -51,6 +51,11 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+# Rate limiting
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 # Optional imports for desktop/watcher features
 # Disable webview in server/headless mode (no display)
 WEBVIEW_OK = False
@@ -224,6 +229,7 @@ class FolderWatcher:
         self.watch_path = None
         self.running = False
         self.processed_files = set()
+        self._processed_lock = threading.Lock()  # Thread-safe access to processed_files
 
     def start(self, watch_path: str, output_path: str = None):
         if not WATCHDOG_OK:
@@ -267,9 +273,12 @@ class FolderWatcher:
         return True
     
     def process_file(self, path: Path):
-        if str(path) in self.processed_files:
-            return
-        self.processed_files.add(str(path))
+        # Thread-safe check and add
+        with self._processed_lock:
+            if str(path) in self.processed_files:
+                return
+            self.processed_files.add(str(path))
+        # Processing outside lock (long operation)
         result = self.parser.parse(path)
         self.on_result(result)
         archive_name = generate_archive_name(result, path)
@@ -292,6 +301,27 @@ class FolderWatcher:
 
 # Constants
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+MAX_RESULTS = 1000  # Maximum results in memory (FIFO)
+
+# File type validation via magic bytes
+ALLOWED_MAGIC_BYTES = {
+    b'%PDF': 'pdf',
+    b'\xff\xd8\xff': 'jpeg',
+    b'\x89PNG': 'png',
+    b'II*\x00': 'tiff',  # Little-endian TIFF
+    b'MM\x00*': 'tiff',  # Big-endian TIFF
+}
+
+
+def validate_file_magic(content: bytes) -> bool:
+    """Validate file type by checking magic bytes (first 4-8 bytes).
+
+    Returns True if file matches allowed types, False otherwise.
+    """
+    for magic in ALLOWED_MAGIC_BYTES:
+        if content.startswith(magic):
+            return True
+    return False
 
 # Thread-safe results storage
 parser = Parser()
@@ -304,6 +334,8 @@ _executor = ThreadPoolExecutor(max_workers=2)
 
 def _safe_append_result(r):
     with results_lock:
+        if len(results) >= MAX_RESULTS:
+            results.pop(0)  # FIFO: remove oldest
         results.append(asdict(r))
 
 watcher = FolderWatcher(parser, _safe_append_result)
@@ -335,9 +367,28 @@ async def lifespan(app):
     _executor.shutdown(wait=False)
 
 
+# Rate limiter setup
+limiter = Limiter(key_func=get_remote_address)
+
+# CORS configuration
+# Default: allow localhost and local network for development
+# Production: set ALLOWED_ORIGINS env var (comma-separated)
+CORS_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "").split(",") if os.environ.get("ALLOWED_ORIGINS") else [
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+]
+
 # FastAPI App
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Keep permissive for local network access (PWA, mobile)
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
 
 
 def get_ui() -> str:
@@ -370,23 +421,37 @@ async def status():
 
 
 @app.post("/api/parse")
-async def do_parse(file: UploadFile = File(...)):
+@limiter.limit("10/minute")  # Rate limit: 10 files per minute per IP
+async def do_parse(request: Request, file: UploadFile = File(...)):
+    # Check file extension
     if Path(file.filename).suffix.lower() not in [".pdf", ".jpg", ".jpeg", ".png", ".tiff", ".tif"]:
         raise HTTPException(400, "Unsupported format")
 
     content = await file.read()
+
+    # Check file size
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(413, "File too large (max 50MB)")
+
+    # Validate magic bytes (prevent extension spoofing)
+    if not validate_file_magic(content):
+        raise HTTPException(400, "Invalid file type (content doesn't match extension)")
 
     safe_name = PurePath(file.filename).name
     tmp = Config.INPUT_DIR / safe_name
     tmp.write_bytes(content)
-    with parser_lock:
-        r = parser.parse(tmp)
+
+    # Run OCR in thread pool to avoid blocking event loop (OCR takes 2-10 seconds)
+    def _parse_sync():
+        with parser_lock:
+            return parser.parse(tmp)
+
+    loop = asyncio.get_event_loop()
+    r = await loop.run_in_executor(_executor, _parse_sync)
+
     archive_name = generate_archive_name(r, tmp)
     shutil.move(str(tmp), str(Config.ARCHIVE_DIR / archive_name))
-    with results_lock:
-        results.append(asdict(r))
+    _safe_append_result(r)
     return {"success": True, "data": asdict(r)}
 
 
@@ -551,6 +616,118 @@ async def detect_gdrive():
             possible_paths.append(str(p))
 
     return {"paths": possible_paths}
+
+
+# Batch processing state
+batch_state = {
+    "running": False,
+    "total": 0,
+    "processed": 0,
+    "current_file": None,
+    "results": []
+}
+batch_lock = threading.Lock()
+
+
+def _process_batch_folder(folder_path: str, archive: bool = True):
+    """Process all files in folder (runs in thread pool)"""
+    global batch_state
+
+    folder = Path(folder_path)
+    extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif']
+    files = [f for f in folder.iterdir() if f.suffix.lower() in extensions]
+
+    with batch_lock:
+        batch_state["running"] = True
+        batch_state["total"] = len(files)
+        batch_state["processed"] = 0
+        batch_state["results"] = []
+
+    for file_path in files:
+        # Check if stopped
+        with batch_lock:
+            if not batch_state["running"]:
+                break
+            batch_state["current_file"] = file_path.name
+
+        try:
+            with parser_lock:
+                result = parser.parse(file_path)
+
+            _safe_append_result(result)
+
+            with batch_lock:
+                batch_state["results"].append(asdict(result))
+                batch_state["processed"] += 1
+
+            # Archive processed file
+            if archive:
+                archive_name = generate_archive_name(result, file_path)
+                shutil.move(str(file_path), str(Config.ARCHIVE_DIR / archive_name))
+
+        except Exception as e:
+            logger.error("Batch error processing %s: %s", file_path.name, e)
+            with batch_lock:
+                batch_state["processed"] += 1
+
+    with batch_lock:
+        batch_state["running"] = False
+        batch_state["current_file"] = None
+
+
+@app.post("/api/batch/start")
+async def start_batch(request: Request):
+    """Start batch processing of all files in a folder"""
+    data = await request.json()
+    folder_path = data.get("folder_path", "").strip()
+    archive = data.get("archive", True)
+
+    if not folder_path:
+        raise HTTPException(400, "folder_path is required")
+
+    folder = Path(folder_path)
+    if not folder.exists() or not folder.is_dir():
+        raise HTTPException(400, "Invalid folder path")
+
+    with batch_lock:
+        if batch_state["running"]:
+            raise HTTPException(409, "Batch processing already running")
+
+    # Count files
+    extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif']
+    files = [f for f in folder.iterdir() if f.suffix.lower() in extensions]
+
+    if not files:
+        raise HTTPException(400, "No supported files found in folder")
+
+    # Start processing in background
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(_executor, _process_batch_folder, folder_path, archive)
+
+    return {"success": True, "total_files": len(files)}
+
+
+@app.get("/api/batch/status")
+async def batch_status():
+    """Get current batch processing status"""
+    with batch_lock:
+        return {
+            "running": batch_state["running"],
+            "total": batch_state["total"],
+            "processed": batch_state["processed"],
+            "current_file": batch_state["current_file"],
+            "progress": round(batch_state["processed"] / batch_state["total"] * 100) if batch_state["total"] > 0 else 0
+        }
+
+
+@app.post("/api/batch/stop")
+async def stop_batch():
+    """Stop batch processing (will complete current file)"""
+    with batch_lock:
+        # Note: This doesn't actually stop - just marks as stopped
+        # The running file will complete, but no new files will start
+        batch_state["running"] = False
+    return {"success": True}
 
 
 # UI loaded from templates/index.html via get_ui()

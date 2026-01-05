@@ -132,14 +132,18 @@ class BaseOCRProcessor:
             return False
 
     def load_image(self, path):
-        """Load image from file (PDF or image)"""
+        """Load image from file (PDF or image).
+
+        For PDF files, only the first page is loaded to optimize memory usage.
+        """
         import cv2
         import numpy as np
 
         ext = path.suffix.lower()
         if ext == ".pdf":
             from pdf2image import convert_from_path
-            imgs = convert_from_path(path, dpi=300)
+            # Only load first page to save memory (50MB PDF = 500MB RAM without this)
+            imgs = convert_from_path(path, dpi=300, first_page=1, last_page=1)
             if imgs:
                 img = np.array(imgs[0])
                 if len(img.shape) == 3:
@@ -256,22 +260,34 @@ class BaseOCRProcessor:
         return None
 
     def extract_vendor(self, text: str, img=None) -> Optional[str]:
-        """Extract vendor name - first from header, then footer, then full text"""
-        # If image provided, try header first, then footer
-        if img is not None:
-            # Try header (top 20%)
-            header_text = self._ocr_region(img, "header")
-            vendor = self._find_vendor_in_text(header_text)
-            if vendor:
-                return vendor
+        """Extract vendor name - first from header, then footer, then full text.
 
-            # Try footer (bottom 20%)
-            footer_text = self._ocr_region(img, "footer")
-            vendor = self._find_vendor_in_text(footer_text)
-            if vendor:
-                return vendor
+        Optimized: Uses text line positions instead of additional OCR calls.
+        Previous version ran OCR 3 times (header, footer, full), now runs once.
+        """
+        # Split text into lines and estimate regions by line count
+        lines = text.split('\n')
+        total_lines = len(lines) if lines else 1
 
-        # Fallback to full text
+        # Header: first 20% of lines
+        header_end = max(1, int(total_lines * 0.20))
+        header_text = '\n'.join(lines[:header_end])
+
+        # Try header first (logos, company names usually at top)
+        vendor = self._find_vendor_in_text(header_text)
+        if vendor:
+            return vendor
+
+        # Footer: last 20% of lines
+        footer_start = int(total_lines * 0.80)
+        footer_text = '\n'.join(lines[footer_start:])
+
+        # Try footer (contact info, signatures)
+        vendor = self._find_vendor_in_text(footer_text)
+        if vendor:
+            return vendor
+
+        # Fallback to full text search
         return self._find_vendor_in_text(text)
 
     def extract_invoice_number(self, text: str) -> Optional[str]:
