@@ -724,8 +724,6 @@ async def batch_status():
 async def stop_batch():
     """Stop batch processing (will complete current file)"""
     with batch_lock:
-        # Note: This doesn't actually stop - just marks as stopped
-        # The running file will complete, but no new files will start
         batch_state["running"] = False
     return {"success": True}
 
