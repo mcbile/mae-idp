@@ -184,7 +184,7 @@ VENDOR = 30
 INVOICE_NUMBER = 30
 INTERNAL_NUMBER = 30
 VAT_ID = 10  # optional
-THRESHOLD = 50  # минимум для "success"
+THRESHOLD = 90  # минимум для "success"
 ```
 
 **ParsedDoc** (`mae.py`) — результат парсинга:
