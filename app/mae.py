@@ -631,8 +631,6 @@ batch_lock = threading.Lock()
 
 def _process_batch_folder(folder_path: str, archive: bool = True):
     """Process all files in folder (runs in thread pool)"""
-    global batch_state
-
     folder = Path(folder_path)
     extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif']
     files = [f for f in folder.iterdir() if f.suffix.lower() in extensions]
@@ -724,8 +722,6 @@ async def batch_status():
 async def stop_batch():
     """Stop batch processing (will complete current file)"""
     with batch_lock:
-        # Note: This doesn't actually stop - just marks as stopped
-        # The running file will complete, but no new files will start
         batch_state["running"] = False
     return {"success": True}
 
