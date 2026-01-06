@@ -631,8 +631,6 @@ batch_lock = threading.Lock()
 
 def _process_batch_folder(folder_path: str, archive: bool = True):
     """Process all files in folder (runs in thread pool)"""
-    global batch_state
-
     folder = Path(folder_path)
     extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif']
     files = [f for f in folder.iterdir() if f.suffix.lower() in extensions]
