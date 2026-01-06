@@ -99,11 +99,11 @@ MAE-IDP (Intelligent Document Processing) — кроссплатформенно
 
 **Версия:** 1.5.0
 **Платформы:** Windows 10/11, macOS, Linux
-**Язык:** Python 3.12+
+**Язык:** Python 3.9+ (тестируется на 3.9-3.12)
 
 ## Tech Stack
 
-- **Python 3.12+**
+- **Python 3.9+**
 - **FastAPI 0.109.0** — веб-сервер
 - **uvicorn 0.27.0** — ASGI сервер
 - **pywebview 4.4.1** — GUI (WebView окно, опционально)
@@ -111,7 +111,8 @@ MAE-IDP (Intelligent Document Processing) — кроссплатформенно
 - **pdf2image 1.16.3** — конвертация PDF
 - **opencv-python-headless 4.9.0.80** — обработка изображений
 - **pyzbar 0.1.9** — распознавание QR/штрих-кодов
-- **pandas 2.2.0 + openpyxl 3.1.2** — Excel экспорт
+- **pandas 2.2.0 + openpyxl 3.1.2** — работа с данными
+- **slowapi 0.1.9** — rate limiting
 - **watchdog 3.0.0** — мониторинг файловой системы
 - **Pillow 10.2.0** — работа с изображениями
 - **numpy 1.26.3** — числовые операции
@@ -163,6 +164,8 @@ python app/batch_rename.py INPUT OUTPUT --no-report  # Без Excel отчёта
 | `app/core.py` | Базовый класс OCR обработки |
 | `app/batch_rename.py` | CLI инструмент пакетной обработки |
 | `app/setup_env.py` | Настройка окружения (Tesseract, Poppler) — кроссплатформенный |
+| `app/cache.py` | OCR кеширование по SHA-256 hash файла |
+| `app/logging_config.py` | Structured logging (JSON/pretty формат) |
 | `app/templates/index.html` | Веб-интерфейс (Vanilla JS, PWA-ready) |
 
 ### Иерархия классов
@@ -181,7 +184,7 @@ VENDOR = 30
 INVOICE_NUMBER = 30
 INTERNAL_NUMBER = 30
 VAT_ID = 10  # optional
-THRESHOLD = 90  # минимум для "success"
+THRESHOLD = 50  # минимум для "success"
 ```
 
 **ParsedDoc** (`mae.py`) — результат парсинга:
@@ -229,9 +232,12 @@ class DocInfo:
 | POST | `/api/parse` | Загрузить и обработать файл |
 | GET | `/api/results` | Получить все результаты |
 | DELETE | `/api/results` | Очистить результаты |
-| POST | `/api/export` | Экспорт в Excel |
+| POST | `/api/export` | Экспорт в CSV/MD/TXT |
 | POST | `/api/watcher/start` | Запустить мониторинг |
 | POST | `/api/watcher/stop` | Остановить мониторинг |
+| POST | `/api/batch/start` | Запустить batch обработку папки |
+| GET | `/api/batch/status` | Статус batch обработки |
+| POST | `/api/batch/stop` | Остановить batch обработку |
 | GET | `/api/browse` | Диалог выбора папки (tkinter) |
 | GET | `/api/detect-gdrive` | Поиск Google Drive |
 | GET | `/api/open/{folder}` | Открыть папку (кроссплатформенно) |
@@ -245,6 +251,8 @@ mae-idp/
 │   ├── core.py             # Общая логика OCR (BaseOCRProcessor)
 │   ├── batch_rename.py     # CLI инструмент
 │   ├── setup_env.py        # Настройка окружения (кроссплатформенный)
+│   ├── cache.py            # OCR кеширование (SHA-256 hash)
+│   ├── logging_config.py   # Structured logging (JSON/pretty)
 │   └── templates/
 │       └── index.html      # Веб-интерфейс (PWA-ready)
 ├── data/
@@ -408,7 +416,9 @@ print(text)
 - Проверка размера файла (50MB лимит)
 - Path traversal защита через `PurePath().name`
 - Thread-safe доступ к парсеру через Lock
-- Нет rate limiting (возможен DoS) — см. BACKLOG.md
+- Rate limiting через slowapi (10 req/min на `/api/parse`)
+- Magic bytes validation — проверка типа файла по содержимому
+- MAX_RESULTS=1000 — ограничение роста списка результатов
 
 ## Deployment (Docker / Render)
 
