@@ -40,6 +40,7 @@
 ### Fixed
 - **Misleading comment removed** — удалён некорректный комментарий в `stop_batch()`, утверждавший что функция "не останавливает" обработку (на самом деле останавливает)
 - **flake8 F824** — удалён ненужный `global batch_state` в `_process_batch_folder()` (мутация словаря не требует global)
+- **CI workflow** — убран Python 3.13 из матрицы (Pillow 10.2.0 не поддерживает 3.13)
 
 ### Changed
 - **Async OCR** — обработка OCR в thread pool (`run_in_executor`) для разблокировки event loop
